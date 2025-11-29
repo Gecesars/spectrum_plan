@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/
+.mypy_cache/
+.pytest_cache/
+.idea/
+.vscode/
+
+# Data assets
+SRTM/
+Knowledge_base/
+outputs/
+etl_errors.log
+.env:Zone.Identifier
+
+# OS files
+.DS_Store
+Thumbs.db

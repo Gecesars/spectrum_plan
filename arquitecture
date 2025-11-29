@@ -1,0 +1,53 @@
+Spectrum Open Source – Sequência de Implementação
+Objetivo: backend on-premise para planejamento/viabilidade de RF que calcula cobertura (Longley-Rice/Deygout), gera overlays em mapas e executa análise regulatória Anatel (FM/TV).
+
+1) Preparação e infraestrutura
+- Subir PostgreSQL 15+ com PostGIS; definir URL no `.env`/`app/config.py` (DB + SECRET_KEY + Redis/Celery).
+- Garantir diretórios de dados locais: `./SRTM` (arquivos .hgt) e `./Knowledge_base` (shapefiles/CSV IBGE + XML Anatel).
+- Manter variáveis de ambiente para pycraf/rasterio (ex.: `SRTMDATA`) e paths de logs (ETL e workers).
+
+2) Módulo 1 – Esquema de dados & GIS
+- Criar `app/config.py` (engine SQLAlchemy + sessão + config básica Flask/Celery).
+- Implementar `app/models.py` com User, Project, Station (freq/erp/height/pattern JSON), VectorLayer, VectorFeature (Geometry MULTIPOLYGON SRID 4326 + JSONB properties + índice espacial).
+- Tests `tests/test_models.py`: fixture de DB isolada, insere usuário/estação/polígono e consulta ST_Intersects ponto vs polígono.
+
+3) Módulo 2 – ETL (Parser Engine)
+- Criar `scripts/ingest_kb.py` com funções:
+  - `ingest_ibge_vectors(shp_path)`: ler com geopandas, reprojectar para EPSG:4326, mapear `CD_SETOR` -> properties JSONB, inserir em VectorFeature, logar geometrias inválidas em `etl_errors.log` sem abortar.
+  - `ingest_demographic_csv(csv_path)`: pandas CSV e UPDATE em massa mesclando população no JSONB via `CD_SETOR`.
+- Tests `tests/test_etl.py`: GeoDataFrame mock -> salvar e validar campos/geom.
+
+4) Módulo 3 – Terreno (SRTM Manager)
+- Criar `app/core/terrain.py` com `ElevationProvider` usando cache LRU para tiles .hgt; resolver arquivo correto por lat/lon; leitura com rasterio/numpy.
+- Método `get_elevation_profile(lat_list, lon_list)` devolve alturas na ordem solicitada.
+- Tests `tests/test_terrain.py`: gerar .hgt mock (numpy) e validar amostra retornada.
+
+5) Módulo 4 – Propagação (Worker)
+- Criar `app/core/propagation.py`: `calculate_coverage(station_id, radius_km)` busca estação, gera grade de pontos, consulta `ElevationProvider`, aplica FSPL + difração simples (ou wrapper pycraf), produz heatmap PNG transparente + bounding box; preparado para Celery.
+- Tests `tests/test_propagation.py`: perfil sintético verificando fluxo básico e geração de arquivo.
+
+6) Módulo 5 – API & Assíncrono
+- Criar `app/main.py` (Flask) com endpoints:
+  - `POST /api/project/<id>/station` (criação).
+  - `POST /api/simulation/start` (dispara Celery para coverage/viabilidade).
+  - `GET /api/simulation/<id>/status` (polling).
+  - `GET /api/analytics/population` (usa ST_Intersects entre cobertura e VectorFeature, retorna população/households).
+- Configurar Celery worker/task para chamar `calculate_coverage` e salvar resultado.
+- Tests de API com client Flask + DB isolado cobrindo rotas e enfileiramento.
+
+7) Fase 2 – Motor de Viabilidade Regulatória (Anatel)
+- 2.1 Descoberta de vizinhos (`search.py`): `find_relevant_neighbors(proposal)` com ST_DWithin (FM 300 km, TV 400 km) + máscara espectral (FM ±600 kHz; TV canal ±1), retornando distância/azimute.
+- 2.2 Motor de Protection Ratio (`regulatory.py`): `RegulatoryStandard.get_required_pr(service_type, freq_offset)` com valores fixos (FM: 45/6/-20/-40 dB; TV: 23/-28/-27 dB); erro para offsets inválidos.
+- 2.3 Análise de contornos rápidos (`contours.py`): `calculate_contour_radius(erp, height, field_strength)` via ITU-R P.1546 (pycraf). `analyze_contours(proposal, neighbors)` marca FAIL se `dist < Rp + Ri`; usar E_min (FM 66 dBuV/m; TV UHF 48; VHF-High 51) e `E_int = E_min - PR`.
+- 2.4 Matriz Deygout (`diffraction.py`): gerar grid dentro do contorno protegido; extrair perfis SRTM para vítima x interferente; aplicar Deygout (parâmetro v, J(v), perdas) vectorizado em NumPy; calcular margem vs PR; heatmap (vermelho = violação), sumarizar área/popu; fallback para FSPL se SRTM faltar e logar warning.
+- Teste específico: FM 98.1 vs 98.3 MHz a 15 km cobrindo pipeline de margem/heatmap.
+
+8) Integração e frontend
+- Expor caminho do PNG/geojson de cobertura para o frontend (Google Maps JS API) e preparar CORS/headers; manter formatos GeoJSON/KML conforme necessário.
+- Opcional: endpoint para download de logs/relatórios de viabilidade.
+
+9) Operação e dados
+- Scripts de bootstrap (criar DB/tabelas, rodar ETL) e instruções de execução Celery/Flask.
+- Logging centralizado (API, workers, ETL) e métricas básicas (tempo de tarefa, cache hits SRTM).
+
+Ordem sugerida: (1) infra -> (2) modelos -> (3) ETL -> (4) terreno -> (5) propagação -> (6) API -> (7) regulatório -> (8) integração visual -> (9) operação.
