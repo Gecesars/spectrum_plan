@@ -1,10 +1,19 @@
 from __future__ import annotations
 
 import os
+import sys
+from pathlib import Path
+
 import pytest
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.exc import OperationalError
+
+# Ensure the repo root is on sys.path for test imports.
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from app.config import Base, build_engine
 
@@ -19,7 +28,10 @@ def engine() -> Engine:
         # Spatial tests require PostGIS; keep engine available for potential unit tests.
         return engine
     with engine.begin() as conn:
-        conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
+        try:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
+        except OperationalError as exc:  # PostGIS not installed in current host
+            pytest.skip(f"PostGIS extension unavailable: {exc}")
     Base.metadata.create_all(bind=engine)
     return engine
 
