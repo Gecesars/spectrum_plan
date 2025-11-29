@@ -71,7 +71,8 @@ Backend on-premise para planejamento/viabilidade de RF conforme especificações
   ```
   pytest
   ```
-Cobertura inclui modelos, ETL, terreno, propagação, e caso FM 98.1 vs 98.3 MHz @ 15 km no módulo regulatório.
+  - Em CI usamos PostGIS via container (`postgis/postgis:14-3.3`); workflow em `.github/workflows/ci.yml`.
+  - Cobertura inclui modelos, ETL, terreno, propagação e caso FM 98.1 vs 98.3 MHz @ 15 km no módulo regulatório.
 
 ## Estrutura
 - `app/models.py` – ORM (User, Project, Station, VectorLayer/Feature, Simulation).
