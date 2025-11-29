@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<section id="cadastro">
+  <div class="card">
+    <h2>Cadastro de Estação</h2>
+    <form id="station-form">
+      <div class="grid">
+        <label>Projeto ID<input type="number" name="project_id" required></label>
+        <label>Nome<input type="text" name="name" required></label>
+        <label>Serviço
+          <select name="service_type">
+            <option value="FM">FM</option>
+            <option value="TV">TV</option>
+          </select>
+        </label>
+        <label>Frequência (MHz)<input type="number" step="0.001" name="frequency_mhz" required></label>
+        <label>ERP (kW)<input type="number" step="0.1" name="erp_kw" required></label>
+        <label>Altura (m)<input type="number" step="0.1" name="antenna_height_m" required></label>
+        <label>Latitude<input type="number" step="0.000001" name="lat" required></label>
+        <label>Longitude<input type="number" step="0.000001" name="lon" required></label>
+      </div>
+      <button type="submit">Cadastrar</button>
+      <div class="hint">Crie um projeto no banco primeiro; use o ID aqui.</div>
+    </form>
+    <pre id="station-result" class="output"></pre>
+  </div>
+</section>
+
+<section id="simulacao">
+  <div class="card">
+    <h2>Simulação de Cobertura</h2>
+    <form id="simulation-form">
+      <div class="grid">
+        <label>Station ID<input type="number" name="station_id" required></label>
+        <label>Raio (km)<input type="number" step="0.1" name="radius_km" value="30"></label>
+      </div>
+      <button type="submit">Iniciar</button>
+    </form>
+    <div class="status">
+      <label>Simulation ID<input type="text" id="sim-id" readonly></label>
+      <button id="check-status" disabled>Checar Status</button>
+    </div>
+    <pre id="simulation-status" class="output"></pre>
+    <div id="coverage-plot"></div>
+  </div>
+</section>
+
+<section id="analytics">
+  <div class="card">
+    <h2>Analytics</h2>
+    <div class="grid">
+      <label>Simulation ID<input type="text" id="analytics-sim-id"></label>
+      <button id="run-analytics">Consultar População</button>
+    </div>
+    <pre id="analytics-result" class="output"></pre>
+    <div class="summary">
+      <div class="pill" id="summary-sectors">Setores: --</div>
+      <div class="pill" id="summary-layers">Camadas: --</div>
+    </div>
+  </div>
+</section>
+{% endblock %}
