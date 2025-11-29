@@ -7,4 +7,4 @@ web_bp = Blueprint("web", __name__)
 
 @web_bp.get("/")
 def index():
-    return render_template("index.html")
+    return render_template("home.html")

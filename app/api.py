@@ -155,3 +155,15 @@ def analytics_summary():
 def get_output_file(filename: str):
     # Serve generated PNGs (coverage/interference) from outputs folder.
     return send_from_directory("app/outputs", filename, as_attachment=False)
+
+
+@api_bp.get("/user/me")
+def current_user():
+    # Placeholder user info; replace with real auth integration as needed.
+    return jsonify(
+        {
+            "name": "RF Engineer",
+            "email": "user@example.com",
+            "days_left": 30,
+        }
+    )

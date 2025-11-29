@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spectrum Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-Xx...snip" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">Spectrum Open Source</div>
+    <nav class="nav-links">
+      <a href="#" class="active">Home</a>
+      <a href="/database">Database</a>
+      <a href="/network">Network</a>
+      <a href="/map">Map</a>
+    </nav>
+    <div class="profile">
+      <div class="avatar"><i class="fa-solid fa-user"></i></div>
+      <div class="user-info">
+        <div id="user-name">Usuário</div>
+        <div id="user-email" class="muted">email@example.com</div>
+      </div>
+      <button id="logout-btn" class="logout">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="welcome">
+      <h1>Welcome <span id="welcome-name">User</span> to the Spectrum Portal.</h1>
+      <p>You are logged in as <strong id="welcome-email">email@example.com</strong>. Access expires in: <strong id="welcome-days">--</strong> days.</p>
+    </section>
+
+    <section class="card-grid">
+      <a class="card" href="/analysis/new">
+        <div class="icon red"><i class="fa-solid fa-wifi"></i></div>
+        <div>
+          <h3>Technical Analysis</h3>
+          <p>Engineering tool for technical studies between proposed and existing stations.</p>
+        </div>
+      </a>
+      <a class="card" href="/projects">
+        <div class="icon orange"><i class="fa-solid fa-server"></i></div>
+        <div>
+          <h3>My Networks</h3>
+          <p>Create and manage your study networks and projects.</p>
+        </div>
+      </a>
+      <a class="card" href="/simulations">
+        <div class="icon yellow"><i class="fa-solid fa-layer-group"></i></div>
+        <div>
+          <h3>My Simulations</h3>
+          <p>Manage and view your generated coverage maps and interference matrices.</p>
+        </div>
+      </a>
+      <a class="card" href="/files">
+        <div class="icon cyan"><i class="fa-solid fa-folder-open"></i></div>
+        <div>
+          <h3>My Files</h3>
+          <p>Storage space for your uploaded patterns, shapefiles, and reports.</p>
+        </div>
+      </a>
+      <a class="card" href="/tools/calculators">
+        <div class="icon green"><i class="fa-solid fa-calculator"></i></div>
+        <div>
+          <h3>RF Calculators</h3>
+          <p>Utils: Unit conversion, Free Space Loss, Satellite Look Angles.</p>
+        </div>
+      </a>
+      <a class="card" href="/docs">
+        <div class="icon blue"><i class="fa-solid fa-book"></i></div>
+        <div>
+          <h3>Documentation</h3>
+          <p>Guides and manuals for the Spectrum solution.</p>
+        </div>
+      </a>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>
