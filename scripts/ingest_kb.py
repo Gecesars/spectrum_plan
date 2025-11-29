@@ -9,6 +9,7 @@ from typing import Iterable, Optional
 import geopandas as gpd
 import pandas as pd
 from geoalchemy2.shape import from_shape
+from shapely.geometry import MultiPolygon, Polygon
 from shapely.geometry.base import BaseGeometry
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -69,8 +70,11 @@ def ingest_ibge_vectors(shp_path: str | Path, layer_name: str = "IBGE Sectors", 
                 logger.warning("Invalid geometry skipped for CD_SETOR=%s", row.get("CD_SETOR"))
                 continue
 
+            if isinstance(geom, Polygon):
+                geom = MultiPolygon([geom])
+
             properties = row.drop(labels=gdf.geometry.name).to_dict()
-            properties["CD_SETOR"] = str(properties.get("CD_SETOR"))
+            properties["CD_SETOR"] = str(properties.get("CD_SETOR")).zfill(15)
             feature = VectorFeature(
                 layer=layer,
                 properties=properties,
@@ -81,6 +85,8 @@ def ingest_ibge_vectors(shp_path: str | Path, layer_name: str = "IBGE Sectors", 
 
         if session is None:
             db.commit()
+        else:
+            db.flush()
 
     return {"inserted": inserted, "skipped": skipped}
 
@@ -95,20 +101,22 @@ def ingest_demographic_csv(csv_path: str | Path, session: Optional[Session] = No
     updated = 0
     with _session_scope(session) as db:
         for _, row in df.iterrows():
-            cd_setor = str(row["CD_SETOR"])
+            cd_setor = str(row["CD_SETOR"]).zfill(15)
             payload = {k: v for k, v in row.items() if k != "CD_SETOR"}
             payload_json = json.dumps(payload)
-            result = db.execute(
-                text(
-                    """
-                    UPDATE vector_features
-                    SET properties = properties || :payload::jsonb
-                    WHERE properties->>'CD_SETOR' = :cd_setor
-                    """
-                ),
-                {"payload": payload_json, "cd_setor": cd_setor},
-            )
-            updated += result.rowcount or 0
+            candidates = {cd_setor, cd_setor.lstrip("0") or "0"}
+            for candidate in candidates:
+                result = db.execute(
+                    text(
+                        """
+                        UPDATE vector_features
+                        SET properties = properties || CAST(:payload AS jsonb)
+                        WHERE btrim(properties->>'CD_SETOR') = :cd_setor
+                        """
+                    ),
+                    {"payload": payload_json, "cd_setor": candidate},
+                )
+                updated += result.rowcount or 0
 
         if session is None:
             db.commit()

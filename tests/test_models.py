@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 from geoalchemy2.shape import from_shape
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, MultiPolygon
 from sqlalchemy import func, select
 
 from app.models import Project, Station, User, VectorFeature, VectorLayer
@@ -38,7 +38,7 @@ def test_polygon_intersects_point(db_session):
     feature = VectorFeature(
         layer=layer,
         properties={"CD_SETOR": "1234567890"},
-        geom=from_shape(polygon, srid=4326),
+        geom=from_shape(MultiPolygon([polygon]), srid=4326),
     )
 
     db_session.add_all([owner, project, layer, station, feature])

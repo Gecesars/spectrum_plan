@@ -32,6 +32,8 @@ def engine() -> Engine:
             conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
         except OperationalError as exc:  # PostGIS not installed in current host
             pytest.skip(f"PostGIS extension unavailable: {exc}")
+    # Reset schema for isolated runs.
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     return engine
 

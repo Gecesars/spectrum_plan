@@ -20,8 +20,9 @@ def test_ingest_ibge_and_merge_demographics(tmp_path, db_session):
         ]
     )
 
+    sector_id = "000000000000001"
     gdf = gpd.GeoDataFrame(
-        {"CD_SETOR": ["001"], "foo": ["bar"], "geometry": [polygon]},
+        {"CD_SETOR": [sector_id], "foo": ["bar"], "geometry": [polygon]},
         crs="EPSG:4326",
     )
     shp_path = tmp_path / "sector.shp"
@@ -31,10 +32,10 @@ def test_ingest_ibge_and_merge_demographics(tmp_path, db_session):
     assert stats["inserted"] == 1
 
     csv_path = tmp_path / "demo.csv"
-    pd.DataFrame([{"CD_SETOR": "001", "population": 1234}]).to_csv(csv_path, index=False)
+    pd.DataFrame([{"CD_SETOR": sector_id, "population": 1234}]).to_csv(csv_path, index=False)
     updated = ingest_demographic_csv(csv_path, session=db_session)
     assert updated == 1
 
     feature = db_session.execute(select(VectorFeature)).scalar_one()
-    assert feature.properties["CD_SETOR"] == "001"
+    assert feature.properties["CD_SETOR"] == sector_id
     assert feature.properties["population"] == 1234
