@@ -3,22 +3,22 @@ from __future__ import annotations
 from flask import Flask
 from flask_cors import CORS
 
-from app.config import AppConfig, init_db
-from app.api import api_bp
+from app.config import Config, init_db
+from app.extensions import init_extensions
+from app.api import register_api
 from app.web import web_bp
 
 
-def create_app(config: AppConfig = AppConfig()) -> Flask:
+def create_app(config_class: type = Config) -> Flask:
     app = Flask(__name__, static_folder="static", template_folder="templates")
-    app.config["SECRET_KEY"] = config.SECRET_KEY
+    app.config.from_object(config_class)
     CORS(app)
 
-    # Ensure DB schema exists before serving requests.
+    init_extensions(app)
+    # Ensure DB schema exists before serving requests (Phase 1 convenience).
     init_db()
-
-    app.register_blueprint(api_bp, url_prefix="/api")
+    register_api(app)
     app.register_blueprint(web_bp)
-
     return app
 
 

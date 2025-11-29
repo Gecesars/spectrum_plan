@@ -18,10 +18,14 @@ def test_polygon_intersects_point(db_session):
     station = Station(
         name="Test Station",
         project=project,
-        service_type="FM",
+        station_type="FM",
+        status="Proposed",
+        latitude=-22.9000,
+        longitude=-43.1000,
+        site_elevation=0.0,
         frequency_mhz=98.1,
         erp_kw=5.0,
-        antenna_height_m=50.0,
+        antenna_height=50.0,
         antenna_pattern={"azimuth": "omni"},
         location=from_shape(Point(-43.1000, -22.9000), srid=4326),
     )

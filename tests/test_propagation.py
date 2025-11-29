@@ -25,10 +25,13 @@ def test_calculate_coverage_creates_png(tmp_path, monkeypatch, db_session):
     station = Station(
         name="Station A",
         project=project,
-        service_type="FM",
+        station_type="FM",
+        status="Proposed",
+        latitude=-22.0,
+        longitude=-43.0,
         frequency_mhz=100.0,
         erp_kw=1.0,
-        antenna_height_m=30.0,
+        antenna_height=30.0,
         antenna_pattern={"azimuth": "omni"},
         location=from_shape(Point(-43.0, -22.0), srid=4326),
     )

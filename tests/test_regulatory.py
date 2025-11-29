@@ -27,10 +27,13 @@ def test_fm_adjacent_station_viability(tmp_path, monkeypatch, db_session):
     station_a = Station(
         name="Station A",
         project=project,
-        service_type="FM",
+        station_type="FM",
+        status="Proposed",
+        latitude=0.0,
+        longitude=0.0,
         frequency_mhz=98.1,
         erp_kw=5.0,
-        antenna_height_m=30.0,
+        antenna_height=30.0,
         antenna_pattern={"azimuth": "omni"},
         location=from_shape(Point(0.0, 0.0), srid=4326),
     )
@@ -38,10 +41,13 @@ def test_fm_adjacent_station_viability(tmp_path, monkeypatch, db_session):
     station_b = Station(
         name="Station B",
         project=project,
-        service_type="FM",
+        station_type="FM",
+        status="Proposed",
+        latitude=0.135,
+        longitude=0.0,
         frequency_mhz=98.3,
         erp_kw=3.0,
-        antenna_height_m=25.0,
+        antenna_height=25.0,
         antenna_pattern={"azimuth": "omni"},
         location=from_shape(Point(0.0, 0.135), srid=4326),
     )

@@ -3,10 +3,10 @@ from __future__ import annotations
 import os
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Iterator, Optional
+from typing import Optional
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text, MetaData
+from sqlalchemy import MetaData, create_engine, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, scoped_session, sessionmaker
 
@@ -15,8 +15,29 @@ load_dotenv()
 
 
 class Base(DeclarativeBase):
-    """Declarative base for all ORM models."""
+    """Declarative base for all ORM models (schema enforced as public)."""
+
     metadata = MetaData(schema="public")
+
+
+class Config:
+    """Default Flask configuration."""
+
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        "SQLALCHEMY_DATABASE_URI",
+        os.getenv("DATABASE_URL", "postgresql+psycopg2://user:password@localhost:5432/spectrum_db"),
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
+    CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+    CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
+
+
+class DevConfig(Config):
+    """Development flavor."""
+
+    DEBUG = True
+    SQLALCHEMY_ECHO = False
 
 
 def _default_db_url() -> str:
