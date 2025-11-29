@@ -11,6 +11,8 @@ alembic==1.17.1
 psycopg2-binary==2.9.11
 greenlet==3.2.4
 GeoAlchemy2==0.14.3
+celery==5.4.0
+redis==5.2.1
 
 # --- Scientific / RF stack ---
 numpy==2.1.3
