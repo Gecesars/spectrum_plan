@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spectrum Plan</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">SP</div>
+      <div>
+        <div class="title">Spectrum Plan</div>
+        <div class="subtitle">Cobertura | Viabilidade | Anatel</div>
+      </div>
+    </div>
+    <nav>
+      <a href="#cadastro">Cadastro de Estação</a>
+      <a href="#simulacao">Simulação</a>
+      <a href="#analytics">Analytics</a>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div>Dados locais: IBGE Sectors ({{ sectors|default('?') }} setores) | SRTM local.</div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
