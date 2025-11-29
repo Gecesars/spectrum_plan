@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Iterator, Optional
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text, MetaData
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, scoped_session, sessionmaker
 
@@ -16,6 +16,7 @@ load_dotenv()
 
 class Base(DeclarativeBase):
     """Declarative base for all ORM models."""
+    metadata = MetaData(schema="public")
 
 
 def _default_db_url() -> str:
@@ -33,6 +34,7 @@ def build_engine(db_url: Optional[str] = None, echo: bool = False) -> Engine:
         echo=echo,
         future=True,
         pool_pre_ping=True,
+        connect_args={"options": "-c search_path=public"},
     )
 
 
@@ -68,5 +70,10 @@ class AppConfig:
 
 def init_db(bind: Optional[Engine] = None) -> None:
     """Create all tables based on ORM metadata."""
+    # Import models to ensure metadata is populated before create_all.
+    from app import models  # noqa: F401
+
     target = bind or engine
-    Base.metadata.create_all(bind=target)
+    with target.begin() as conn:
+        conn.execute(text("SET search_path TO public"))
+        Base.metadata.create_all(bind=conn)
