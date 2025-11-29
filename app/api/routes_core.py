@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from http import HTTPStatus
+import json
 from typing import Any, Dict
 
 from flask import Blueprint, jsonify, request, send_from_directory
@@ -10,10 +11,32 @@ from sqlalchemy import cast, func, select
 from sqlalchemy.types import Integer
 
 from app.config import get_session
-from app.models import Project, Simulation, Station, VectorFeature
+from app.models import Project, Simulation, Station, VectorFeature, VectorLayer
 from app.tasks import run_coverage_simulation
 
 core_bp = Blueprint("core", __name__)
+
+
+def _tile_bbox(z: int, x: int, y: int) -> tuple[float, float, float, float]:
+    """Convert slippy tile coordinates to WGS84 bbox."""
+    n = 2.0**z
+    lon_w = x / n * 360.0 - 180.0
+    lon_e = (x + 1) / n * 360.0 - 180.0
+    lat_n = func.degrees(func.atan(func.sinh(func.pi() * (1 - 2 * y / n))))  # type: ignore
+    lat_s = func.degrees(func.atan(func.sinh(func.pi() * (1 - 2 * (y + 1) / n))))  # type: ignore
+    return lon_w, lat_s, lon_e, lat_n
+
+
+def _tile_bbox_py(z: int, x: int, y: int) -> tuple[float, float, float, float]:
+    """Pure-Python slippy tile to bbox."""
+    import math
+
+    n = 2.0 ** z
+    lon_w = x / n * 360.0 - 180.0
+    lon_e = (x + 1) / n * 360.0 - 180.0
+    lat_rad_n = math.atan(math.sinh(math.pi * (1 - 2 * y / n)))
+    lat_rad_s = math.atan(math.sinh(math.pi * (1 - 2 * (y + 1) / n)))
+    return lon_w, math.degrees(lat_rad_s), lon_e, math.degrees(lat_rad_n)
 
 
 @core_bp.get("/health")
@@ -174,3 +197,39 @@ def current_user():
             "days_left": 30,
         }
     )
+
+
+@core_bp.get("/tiles/<string:layer_name>/<int:z>/<int:x>/<int:y>")
+def tile_query(layer_name: str, z: int, x: int, y: int):
+    """Return GeoJSON features intersecting a slippy tile for a given layer."""
+    limit = max(1, min(int(request.args.get("limit", 500)), 2000))
+    bbox = _tile_bbox_py(z, x, y)
+    with get_session() as session:
+        layer = session.query(VectorLayer).filter_by(name=layer_name).first()
+        if not layer:
+            return jsonify({"error": f"Layer {layer_name} not found"}), HTTPStatus.NOT_FOUND
+
+        envelope = func.ST_MakeEnvelope(bbox[0], bbox[1], bbox[2], bbox[3], 4326)
+        stmt = (
+            select(
+                VectorFeature.id,
+                VectorFeature.properties,
+                func.ST_AsGeoJSON(VectorFeature.geom),
+            )
+            .where(VectorFeature.layer_id == layer.id)
+            .where(func.ST_Intersects(VectorFeature.geom, envelope))
+            .limit(limit)
+        )
+        rows = session.execute(stmt).all()
+
+    features = []
+    for fid, props, geom_json in rows:
+        features.append(
+            {
+                "type": "Feature",
+                "id": fid,
+                "properties": props,
+                "geometry": json.loads(geom_json) if geom_json else None,
+            }
+        )
+    return jsonify({"type": "FeatureCollection", "features": features})
