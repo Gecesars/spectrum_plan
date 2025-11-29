@@ -4,6 +4,9 @@ from datetime import datetime
 from typing import Dict, Optional
 from uuid import uuid4
 
+from argon2 import PasswordHasher, Type
+from argon2.exceptions import VerifyMismatchError, VerificationError
+from flask_login import UserMixin
 from geoalchemy2 import Geometry
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB
@@ -12,18 +15,32 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .config import Base
 
+_pwd_hasher = PasswordHasher(time_cost=2, memory_cost=256000, parallelism=8, type=Type.ID)
 
-class User(Base):
+
+def validate_password_strength(password: str) -> tuple[bool, Optional[str]]:
+    """Basic password policy: >=8 chars, digit and letter."""
+    if len(password) < 8:
+        return False, "Password must have at least 8 characters."
+    if not any(c.isdigit() for c in password):
+        return False, "Password must include a digit."
+    if not any(c.isalpha() for c in password):
+        return False, "Password must include a letter."
+    return True, None
+
+
+class User(UserMixin, Base):
     """Application user."""
 
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(512), nullable=False)
     full_name: Mapped[Optional[str]] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     verification_token: Mapped[Optional[str]] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -33,6 +50,18 @@ class User(Base):
 
     def __repr__(self) -> str:  # pragma: no cover - representational
         return f"<User {self.email}>"
+
+    def set_password(self, raw_password: str) -> None:
+        ok, msg = validate_password_strength(raw_password)
+        if not ok:
+            raise ValueError(msg)
+        self.password_hash = _pwd_hasher.hash(raw_password)
+
+    def check_password(self, raw_password: str) -> bool:
+        try:
+            return _pwd_hasher.verify(self.password_hash, raw_password)
+        except (VerifyMismatchError, VerificationError):
+            return False
 
 
 class Project(Base):

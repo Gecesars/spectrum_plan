@@ -11,7 +11,7 @@ from sqlalchemy import cast, func, select
 from sqlalchemy.types import Integer
 
 from app.config import get_session
-from app.models import Project, Simulation, Station, VectorFeature, VectorLayer
+from app.models import Project, ProjectArtifact, Simulation, Station, VectorFeature, VectorLayer
 from app.tasks import run_coverage_simulation
 
 core_bp = Blueprint("core", __name__)
@@ -178,7 +178,33 @@ def analytics_summary():
     with get_session() as session:
         sector_count = session.execute(select(func.count(VectorFeature.id))).scalar_one()
         layer_count = session.execute(select(func.count(func.distinct(VectorFeature.layer_id)))).scalar_one()
-    return jsonify({"sectors": sector_count, "layers": layer_count})
+        project_count = session.execute(select(func.count(Project.id))).scalar_one()
+        sim_count = session.execute(select(func.count(Simulation.id))).scalar_one()
+        artifact_count = session.execute(select(func.count(ProjectArtifact.id))).scalar_one()
+    return jsonify(
+        {
+            "sectors": sector_count,
+            "layers": layer_count,
+            "projects": project_count,
+            "simulations": sim_count,
+            "artifacts": artifact_count,
+        }
+    )
+
+
+@core_bp.get("/dashboard/summary")
+def dashboard_summary():
+    with get_session() as session:
+        project_count = session.execute(select(func.count(Project.id))).scalar_one()
+        simulation_count = session.execute(select(func.count(Simulation.id))).scalar_one()
+        artifact_count = session.execute(select(func.count(ProjectArtifact.id))).scalar_one()
+    return jsonify(
+        {
+            "total_projects": project_count,
+            "total_simulations": simulation_count,
+            "total_artifacts": artifact_count,
+        }
+    )
 
 
 @core_bp.get("/outputs/<path:filename>")

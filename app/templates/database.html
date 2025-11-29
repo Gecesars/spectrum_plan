@@ -1,0 +1,35 @@
+{% extends "base_portal.html" %}
+{% block content %}
+<section class="welcome">
+  <h1>Database</h1>
+  <p>Explore layers ingested from IBGE/Anatel. Use tiles endpoint or summaries below.</p>
+</section>
+
+<section class="card-grid">
+  <div class="card">
+    <div>
+      <h3>Layers Summary</h3>
+      <p id="layers-summary">Loading...</p>
+    </div>
+  </div>
+  <div class="card">
+    <div>
+      <h3>Tile Query Helper</h3>
+      <p>Use <code>/api/tiles/&lt;layer&gt;/&lt;z&gt;/&lt;x&gt;/&lt;y&gt;</code> to fetch GeoJSON.</p>
+      <div class="muted">Example: /api/tiles/IBGE%20Setores/10/512/511?limit=200</div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function loadLayers() {
+    const res = await fetch("/api/analytics/summary");
+    const json = await res.json();
+    document.getElementById("layers-summary").textContent =
+      `Camadas: ${json.layers ?? '--'} | Setores: ${json.sectors ?? '--'}`;
+  }
+  loadLayers();
+</script>
+{% endblock %}

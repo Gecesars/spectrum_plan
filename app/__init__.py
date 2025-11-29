@@ -7,6 +7,7 @@ from app.config import Config, init_db
 from app.extensions import init_extensions
 from app.api import register_api
 from app.web import web_bp
+from app.cli import register_cli
 
 
 def create_app(config_class: type = Config) -> Flask:
@@ -19,7 +20,5 @@ def create_app(config_class: type = Config) -> Flask:
     init_db()
     register_api(app)
     app.register_blueprint(web_bp)
+    register_cli(app)
     return app
-
-
-app = create_app()

@@ -40,6 +40,16 @@ class DevConfig(Config):
     SQLALCHEMY_ECHO = False
 
 
+class TestConfig(Config):
+    """Testing configuration."""
+
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        "TEST_DATABASE_URI",
+        os.getenv("SQLALCHEMY_DATABASE_URI", "postgresql+psycopg2://postgres:postgres@localhost:5432/spectrum_test"),
+    )
+
+
 def _default_db_url() -> str:
     # Prefer explicit env var; fall back to a Postgres URL to keep parity with production.
     return os.getenv(
@@ -87,6 +97,12 @@ class AppConfig:
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", REDIS_URL)
     CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", REDIS_URL)
+    MAIL_SERVER: str = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+    MAIL_PORT: int = int(os.getenv("MAIL_PORT", "587"))
+    MAIL_USERNAME: Optional[str] = os.getenv("MAIL_USERNAME")
+    MAIL_PASSWORD: Optional[str] = os.getenv("MAIL_PASSWORD")
+    MAIL_USE_TLS: bool = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
+    MAIL_DEFAULT_SENDER: str = os.getenv("MAIL_DEFAULT_SENDER", "noreply@spectrum.com")
 
 
 def init_db(bind: Optional[Engine] = None) -> None:

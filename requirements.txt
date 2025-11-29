@@ -13,6 +13,7 @@ greenlet==3.2.4
 GeoAlchemy2==0.14.3
 celery==5.4.0
 redis==5.2.1
+argon2-cffi==23.1.0
 
 # --- Scientific / RF stack ---
 numpy==2.1.3

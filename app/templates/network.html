@@ -1,0 +1,45 @@
+{% extends "base_portal.html" %}
+{% block content %}
+<section class="welcome">
+  <h1>Network / Projects</h1>
+  <p>Manage your study networks and projects.</p>
+</section>
+
+<section class="card">
+  <h3>Create Project</h3>
+  <form id="project-form" class="grid-form">
+    <label>Nome<input type="text" name="name" required></label>
+    <label>Descrição<textarea name="description" rows="2"></textarea></label>
+    <button type="submit">Criar</button>
+  </form>
+  <pre id="project-result" class="output"></pre>
+</section>
+
+<section class="card">
+  <h3>Projetos</h3>
+  <pre id="project-list" class="output">Carregando...</pre>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  async function loadProjects() {
+    const res = await fetch("/api/projects");
+    const json = await res.json();
+    document.getElementById("project-list").textContent = JSON.stringify(json, null, 2);
+  }
+  loadProjects();
+  document.getElementById("project-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target).entries());
+    const res = await fetch("/api/projects", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    document.getElementById("project-result").textContent = JSON.stringify(json, null, 2);
+    loadProjects();
+  });
+</script>
+{% endblock %}

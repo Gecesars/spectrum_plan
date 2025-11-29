@@ -60,6 +60,39 @@ body {
 }
 .welcome h1 { margin: 0 0 6px 0; font-size: 24px; }
 .welcome p { margin: 0; color: var(--muted); }
+.summary-badges {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.badge {
+  background: #fff;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.auth-card {
+  max-width: 420px;
+  margin: 40px auto;
+  background: var(--card);
+  padding: 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.auth-card form { display: grid; gap: 12px; }
+.auth-card button { width: 100%; margin-top: 0; }
+.remember { display: flex; align-items: center; gap: 8px; color: var(--muted); }
+.auth-links { margin-top: 12px; }
+.auth-links a { color: var(--accent); text-decoration: none; }
+.flash-container { margin: 12px 0; }
+.flash { padding: 10px; border-radius: 8px; margin-bottom: 6px; }
+.flash.error { background: #fee2e2; color: #991b1b; }
+.flash.success { background: #dcfce7; color: #166534; }
+.flash.info { background: #e0f2fe; color: #075985; }
 
 .card-grid {
   display: grid;

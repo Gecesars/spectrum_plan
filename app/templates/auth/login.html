@@ -1,0 +1,15 @@
+{% extends "base_portal.html" %}
+{% block content %}
+<section class="auth-card">
+  <h2>Login</h2>
+  <form method="post">
+    <label>Email<input type="email" name="email" required></label>
+    <label>Senha<input type="password" name="password" required></label>
+    <label class="remember"><input type="checkbox" name="remember"> Lembrar</label>
+    <button type="submit">Entrar</button>
+  </form>
+  <div class="auth-links">
+    <a href="{{ url_for('auth.register_get') }}">Criar conta</a>
+  </div>
+</section>
+{% endblock %}

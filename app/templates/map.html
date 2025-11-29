@@ -1,0 +1,13 @@
+{% extends "base_portal.html" %}
+{% block content %}
+<section class="welcome">
+  <h1>Map</h1>
+  <p>Use the tile endpoint to overlay IBGE layers or coverage artifacts.</p>
+</section>
+
+<section class="card">
+  <h3>Tile Endpoint</h3>
+  <p>GET <code>/api/tiles/&lt;layer&gt;/&lt;z&gt;/&lt;x&gt;/&lt;y&gt;?limit=500</code></p>
+  <pre class="output" id="tile-example">Ex: /api/tiles/IBGE%20Setores/10/512/511</pre>
+</section>
+{% endblock %}

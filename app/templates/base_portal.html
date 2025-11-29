@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spectrum Portal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-Xx...snip" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">Spectrum Open Source</div>
+    <nav class="nav-links">
+      {% if current_user.is_authenticated %}
+        <a href="/" class="{% if request.path=='/' %}active{% endif %}">Home</a>
+        <a href="/projects" class="{% if request.path.startswith('/projects') %}active{% endif %}">Projects</a>
+        <a href="/simulations" class="{% if request.path.startswith('/simulations') %}active{% endif %}">Simulations</a>
+        <a href="/database" class="{% if request.path.startswith('/database') %}active{% endif %}">Database</a>
+        <a href="/map" class="{% if request.path.startswith('/map') %}active{% endif %}">Map</a>
+      {% else %}
+        <a href="/auth/login" class="{% if request.path.startswith('/auth/login') %}active{% endif %}">Login</a>
+        <a href="/auth/register" class="{% if request.path.startswith('/auth/register') %}active{% endif %}">Register</a>
+      {% endif %}
+    </nav>
+    <div class="profile">
+      {% if current_user.is_authenticated %}
+        <div class="avatar"><i class="fa-solid fa-user"></i></div>
+        <div class="user-info">
+          <div id="user-name">{{ current_user.full_name or current_user.email }}</div>
+          <div id="user-email" class="muted">{{ current_user.email }}</div>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="logout">Logout</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
