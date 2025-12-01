@@ -9,6 +9,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from app.config import get_session
 from app.models import User
+from app.utils.email import send_verification_email
 
 auth_bp = Blueprint("auth", __name__)
 auth_api_bp = Blueprint("auth_api", __name__)
@@ -71,10 +72,15 @@ def register_post():
             is_verified=False,
             verification_token=token,
         )
-        user.set_password(password)
+        try:
+            user.set_password(password)
+        except ValueError as exc:
+            flash(str(exc), "error")
+            return redirect(url_for("auth.register_get"))
         session.add(user)
         session.flush()
-        flash(f"Conta criada. Use o token para confirmar: {token}", "info")
+        send_verification_email(email, token)
+        flash("Conta criada. Verifique seu e-mail para confirmar.", "success")
     return redirect(url_for("auth.login_get"))
 
 

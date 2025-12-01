@@ -83,8 +83,18 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
-.auth-card form { display: grid; gap: 12px; }
-.auth-card button { width: 100%; margin-top: 0; }
+.auth-header h2 { margin: 0 0 6px 0; }
+.auth-header p { margin: 0 0 12px 0; color: var(--muted); }
+.auth-form { display: grid; gap: 12px; }
+.auth-form input {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 10px;
+  background: #0b1221;
+  color: var(--text);
+}
+.auth-card button { width: 100%; margin-top: 6px; }
 .remember { display: flex; align-items: center; gap: 8px; color: var(--muted); }
 .auth-links { margin-top: 12px; }
 .auth-links a { color: var(--accent); text-decoration: none; }
