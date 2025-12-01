@@ -12,7 +12,9 @@
 body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background: var(--bg);
+  background: radial-gradient(circle at 20% 20%, rgba(56,189,248,0.08), transparent 30%),
+              radial-gradient(circle at 80% 0%, rgba(59,130,246,0.08), transparent 25%),
+              var(--bg);
   color: var(--text);
 }
 .topbar {
@@ -23,6 +25,9 @@ body {
   justify-content: space-between;
   padding: 14px 24px;
   box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 5;
 }
 .logo { font-weight: 800; letter-spacing: 0.5px; }
 .nav-links { display: flex; gap: 16px; }
@@ -83,6 +88,7 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
+.card-elevated { box-shadow: 0 16px 36px rgba(0,0,0,0.12); }
 .auth-header h2 { margin: 0 0 6px 0; }
 .auth-header p { margin: 0 0 12px 0; color: var(--muted); }
 .auth-form { display: grid; gap: 12px; }

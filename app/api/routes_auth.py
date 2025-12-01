@@ -57,6 +57,10 @@ def register_post():
     password = data.get("password", "")
     password_confirm = data.get("password_confirm", "")
 
+    if not email or not password:
+        flash("Email e senha são obrigatórios", "error")
+        return redirect(url_for("auth.register_get"))
+
     if password != password_confirm:
         flash("As senhas não conferem", "error")
         return redirect(url_for("auth.register_get"))
