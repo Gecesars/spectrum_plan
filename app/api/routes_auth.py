@@ -61,6 +61,12 @@ def register_post():
         flash("Email e senha são obrigatórios", "error")
         return redirect(url_for("auth.register_get"))
 
+    from app.models import validate_password_strength
+    ok, msg = validate_password_strength(password)
+    if not ok:
+        flash(msg or "Senha inválida", "error")
+        return redirect(url_for("auth.register_get"))
+
     if password != password_confirm:
         flash("As senhas não conferem", "error")
         return redirect(url_for("auth.register_get"))
