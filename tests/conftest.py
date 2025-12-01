@@ -5,11 +5,19 @@ import sys
 from pathlib import Path
 
 import pytest
+from dotenv import load_dotenv
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.exc import OperationalError
 
+# Garantir que variáveis de ambiente do .env sejam carregadas em execuções de teste isoladas.
+load_dotenv()
+# Fixar URL de teste quando não houver configuração explícita.
+os.environ.setdefault(
+    "TEST_DATABASE_URL",
+    os.getenv("DATABASE_URL") or "postgresql+psycopg2://atx:123@127.0.0.1:5432/atxcover",
+)
 # Ensure the repo root is on sys.path for test imports.
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -24,7 +32,8 @@ from app.extensions import db
 def engine() -> Engine:
     db_url = os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL")
     if not db_url:
-        db_url = "postgresql+psycopg2://postgres:postgres@localhost:5432/spectrum_test"
+        # Fallback for local dev in WSL: usa o banco padrão do projeto.
+        db_url = "postgresql+psycopg2://atx:123@127.0.0.1:5432/atxcover"
     engine = build_engine(db_url)
     if engine.dialect.name != "postgresql":
         # Spatial tests require PostGIS; keep engine available for potential unit tests.
@@ -64,9 +73,14 @@ def db_session(engine: Engine) -> Session:
 @pytest.fixture(scope="session")
 def app(engine: Engine):
     # Point TestConfig to the prepared engine URL.
-    os.environ["SQLALCHEMY_DATABASE_URI"] = str(engine.url)
-    test_config = TestConfig
-    application = create_app(test_config)
+    db_url = os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL")
+    os.environ["SQLALCHEMY_DATABASE_URI"] = db_url or ""
+    RuntimeTestConfig = type(
+        "RuntimeTestConfig",
+        (TestConfig,),
+        {"SQLALCHEMY_DATABASE_URI": db_url},
+    )
+    application = create_app(RuntimeTestConfig)
     application.config["TESTING"] = True
     with application.app_context():
         Base.metadata.drop_all(bind=engine)

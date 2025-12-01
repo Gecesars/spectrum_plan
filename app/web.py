@@ -3,6 +3,9 @@ from __future__ import annotations
 from flask import Blueprint, render_template, redirect, url_for
 from flask_login import current_user, login_required
 
+from app.config import get_session
+from app.models import Project
+
 web_bp = Blueprint("web", __name__)
 
 
@@ -34,7 +37,9 @@ def map_view():
 @web_bp.get("/projects")
 @login_required
 def projects_view():
-    return render_template("projects.html")
+    with get_session() as session:
+        projects = session.query(Project).filter(Project.user_id == current_user.id).all()
+    return render_template("projects.html", projects=projects)
 
 
 @web_bp.get("/simulations")

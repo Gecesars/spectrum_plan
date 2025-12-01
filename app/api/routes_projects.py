@@ -1,27 +1,19 @@
 from __future__ import annotations
 
 from flask import Blueprint, jsonify, request
-from sqlalchemy import select
+from flask_login import login_required, current_user
 
 from app.config import get_session
-from app.models import Project, User
+from app.models import Project
 
 projects_bp = Blueprint("projects", __name__)
 
 
-def _get_or_create_default_user(session) -> User:
-    user = session.query(User).first()
-    if not user:
-        user = User(email="user@example.com", password_hash="stub", full_name="User")
-        session.add(user)
-        session.flush()
-    return user
-
-
 @projects_bp.get("")
+@login_required
 def list_projects():
     with get_session() as session:
-        projects = session.execute(select(Project)).scalars().all()
+        projects = session.query(Project).filter(Project.user_id == current_user.id).all()
         return jsonify(
             [
                 {"id": p.id, "name": p.name, "description": p.description, "user_id": p.user_id}
@@ -31,19 +23,29 @@ def list_projects():
 
 
 @projects_bp.post("")
+@login_required
 def create_project():
     data = request.get_json(force=True)
-    name = data.get("name")
+    name = (data.get("name") or "").strip()
     if not name:
         return jsonify({"error": "name is required"}), 400
 
     with get_session() as session:
-        user = _get_or_create_default_user(session)
         project = Project(
             name=name,
-            description=data.get("description"),
-            owner=user,
+            description=(data.get("description") or "").strip() or None,
+            user_id=current_user.id,
         )
         session.add(project)
         session.flush()
-        return jsonify({"id": project.id, "name": project.name, "user_id": user.id}), 201
+        return (
+            jsonify(
+                {
+                    "id": project.id,
+                    "name": project.name,
+                    "description": project.description,
+                    "user_id": project.user_id,
+                }
+            ),
+            201,
+        )

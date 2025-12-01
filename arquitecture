@@ -1,53 +1,43 @@
-Spectrum Open Source – Sequência de Implementação
-Objetivo: backend on-premise para planejamento/viabilidade de RF que calcula cobertura (Longley-Rice/Deygout), gera overlays em mapas e executa análise regulatória Anatel (FM/TV).
+Spectrum Open Source — Sequência de Implementação (Fases 1–4)
+Objetivo: backend + portal web para planejamento/viabilidade de RF (FM/TV) com dados locais (IBGE/Anatel) e PostGIS. Dev em WSL/PostgreSQL; SQLite só cobre autenticação simples, não GIS.
 
-1) Preparação e infraestrutura
-- Subir PostgreSQL 15+ com PostGIS; definir URL no `.env`/`app/config.py` (DB + SECRET_KEY + Redis/Celery).
-- Garantir diretórios de dados locais: `./SRTM` (arquivos .hgt) e `./Knowledge_base` (shapefiles/CSV IBGE + XML Anatel).
-- Manter variáveis de ambiente para pycraf/rasterio (ex.: `SRTMDATA`) e paths de logs (ETL e workers).
+1) Ambiente e config
+- Copiar `.env.example` -> `.env` e preencher DATABASE_URL/SECRET_KEY/SMTP/Redis.
+- Ativar `venv` e `pip install -r requirements.txt`.
+- Garantir `CREATE EXTENSION postgis;`.
+- Inicializar esquema: `flask shell -c "from app.config import init_db; init_db()"` (ou `flask db migrate/upgrade` se usar Alembic).
 
-2) Módulo 1 – Esquema de dados & GIS
-- Criar `app/config.py` (engine SQLAlchemy + sessão + config básica Flask/Celery).
-- Implementar `app/models.py` com User, Project, Station (freq/erp/height/pattern JSON), VectorLayer, VectorFeature (Geometry MULTIPOLYGON SRID 4326 + JSONB properties + índice espacial).
-- Tests `tests/test_models.py`: fixture de DB isolada, insere usuário/estação/polígono e consulta ST_Intersects ponto vs polígono.
+2) Autenticação e CLI
+- Blueprints `auth` (HTML) e `auth_api` (JSON), `web` (páginas), `projects` e `core`.
+- Argon2 + política de senha (>=8, letra e dígito); verificação por e-mail (`app/utils/email.py` usa .env; mocka se vazio).
+- CLI `flask user.create/list/set-password/promote` para bootstrap do admin.
 
-3) Módulo 2 – ETL (Parser Engine)
-- Criar `scripts/ingest_kb.py` com funções:
-  - `ingest_ibge_vectors(shp_path)`: ler com geopandas, reprojectar para EPSG:4326, mapear `CD_SETOR` -> properties JSONB, inserir em VectorFeature, logar geometrias inválidas em `etl_errors.log` sem abortar.
-  - `ingest_demographic_csv(csv_path)`: pandas CSV e UPDATE em massa mesclando população no JSONB via `CD_SETOR`.
-- Tests `tests/test_etl.py`: GeoDataFrame mock -> salvar e validar campos/geom.
+3) Dados/ETL (Knowledge_base)
+- Ingestão setores: `python -m scripts.ingest_kb shp Knowledge_base/Ibge/BR_setores_CD2022.shp --layer ibge_setores_cd2022`.
+- Merge demografia: gerar CSV do Excel (`Knowledge_base/Ibge/populacao.csv`) e `python -m scripts.ingest_kb csv ...`.
+- Agregar municípios: `python -m scripts.ingest_kb municipios --source ibge_setores_cd2022 --target ibge_municipios_2022`.
+- Tiles: `/api/tiles/<layer>/<z>/<x>/<y>?limit=500&cd_mun=3304557` (camada deve existir em `vector_layers`).
 
-4) Módulo 3 – Terreno (SRTM Manager)
-- Criar `app/core/terrain.py` com `ElevationProvider` usando cache LRU para tiles .hgt; resolver arquivo correto por lat/lon; leitura com rasterio/numpy.
-- Método `get_elevation_profile(lat_list, lon_list)` devolve alturas na ordem solicitada.
-- Tests `tests/test_terrain.py`: gerar .hgt mock (numpy) e validar amostra retornada.
+4) Modelos e API
+- ORM (`app/models.py`): User/Project/Station/Simulation/VectorLayer/VectorFeature/ProjectArtifact; geometria SRID 4326.
+- API core (`app/api/routes_core.py`): health, criar estação, iniciar simulação, status, analytics, tiles, download de artefatos.
+- Projetos (`/api/projects`): lista e cria projetos do usuário logado.
+- Tasks Celery (`app/tasks.py`): `run_coverage_simulation` chama `app/core/propagation.py`.
 
-5) Módulo 4 – Propagação (Worker)
-- Criar `app/core/propagation.py`: `calculate_coverage(station_id, radius_km)` busca estação, gera grade de pontos, consulta `ElevationProvider`, aplica FSPL + difração simples (ou wrapper pycraf), produz heatmap PNG transparente + bounding box; preparado para Celery.
-- Tests `tests/test_propagation.py`: perfil sintético verificando fluxo básico e geração de arquivo.
+5) Frontend (base_portal)
+- Layout principal `base_portal.html`; dashboards/cards (`home.html`), projetos (`projects.html` com formulário + listagem dinâmica), páginas stub (`map.html`, `database.html`, etc.).
+- Estilos e interações em `app/static/css/dashboard.css` e `app/static/js/dashboard.js` (fetch user, summary, projects).
+- Auth UI responsiva em `app/templates/auth/login.html` e `register.html`.
 
-6) Módulo 5 – API & Assíncrono
-- Criar `app/main.py` (Flask) com endpoints:
-  - `POST /api/project/<id>/station` (criação).
-  - `POST /api/simulation/start` (dispara Celery para coverage/viabilidade).
-  - `GET /api/simulation/<id>/status` (polling).
-  - `GET /api/analytics/population` (usa ST_Intersects entre cobertura e VectorFeature, retorna população/households).
-- Configurar Celery worker/task para chamar `calculate_coverage` e salvar resultado.
-- Tests de API com client Flask + DB isolado cobrindo rotas e enfileiramento.
+6) Execução diária
+- `flask run` para API/páginas; `celery -A app.tasks.celery_app worker -l info` para jobs.
+- Carregar KB antes de usar tiles/analytics.
+- Criar usuário inicial via CLI; confirmar e-mail usando link gerado (ou SMTP real conforme .env).
 
-7) Fase 2 – Motor de Viabilidade Regulatória (Anatel)
-- 2.1 Descoberta de vizinhos (`search.py`): `find_relevant_neighbors(proposal)` com ST_DWithin (FM 300 km, TV 400 km) + máscara espectral (FM ±600 kHz; TV canal ±1), retornando distância/azimute.
-- 2.2 Motor de Protection Ratio (`regulatory.py`): `RegulatoryStandard.get_required_pr(service_type, freq_offset)` com valores fixos (FM: 45/6/-20/-40 dB; TV: 23/-28/-27 dB); erro para offsets inválidos.
-- 2.3 Análise de contornos rápidos (`contours.py`): `calculate_contour_radius(erp, height, field_strength)` via ITU-R P.1546 (pycraf). `analyze_contours(proposal, neighbors)` marca FAIL se `dist < Rp + Ri`; usar E_min (FM 66 dBuV/m; TV UHF 48; VHF-High 51) e `E_int = E_min - PR`.
-- 2.4 Matriz Deygout (`diffraction.py`): gerar grid dentro do contorno protegido; extrair perfis SRTM para vítima x interferente; aplicar Deygout (parâmetro v, J(v), perdas) vectorizado em NumPy; calcular margem vs PR; heatmap (vermelho = violação), sumarizar área/popu; fallback para FSPL se SRTM faltar e logar warning.
-- Teste específico: FM 98.1 vs 98.3 MHz a 15 km cobrindo pipeline de margem/heatmap.
+7) Testes e validação
+- `pytest` (usa `TEST_DATABASE_URL` ou `DATABASE_URL` PostGIS); fixtures resetam schema.
+- Verificar `/api/health`, `/api/analytics/summary`, tiles e fluxo de login/registro.
 
-8) Integração e frontend
-- Expor caminho do PNG/geojson de cobertura para o frontend (Google Maps JS API) e preparar CORS/headers; manter formatos GeoJSON/KML conforme necessário.
-- Opcional: endpoint para download de logs/relatórios de viabilidade.
-
-9) Operação e dados
-- Scripts de bootstrap (criar DB/tabelas, rodar ETL) e instruções de execução Celery/Flask.
-- Logging centralizado (API, workers, ETL) e métricas básicas (tempo de tarefa, cache hits SRTM).
-
-Ordem sugerida: (1) infra -> (2) modelos -> (3) ETL -> (4) terreno -> (5) propagação -> (6) API -> (7) regulatório -> (8) integração visual -> (9) operação.
+8) Deploy VPS
+- Mesmo .env (.prod), PostGIS/Redis instalados, `SRTM/` e `Knowledge_base/` montados fora do repo.
+- Usar gunicorn/NGINX para Flask; supervisão para Celery worker e logs (etl_errors.log).

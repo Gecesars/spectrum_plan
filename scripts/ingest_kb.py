@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Optional
@@ -38,8 +39,11 @@ def _session_scope(session: Optional[Session] = None) -> Iterable[Session]:
             yield scoped
 
 
-def ingest_ibge_vectors(shp_path: str | Path, layer_name: str = "IBGE Sectors", session: Optional[Session] = None) -> dict:
+def ingest_ibge_vectors(
+    shp_path: str | Path, layer_name: str = "IBGE Sectors", session: Optional[Session] = None
+) -> dict:
     """Ingest IBGE shapefile into VectorFeature with CRS normalized to EPSG:4326."""
+    os.environ.setdefault("SHAPE_RESTORE_SHX", "YES")  # allow reading .shp missing .shx (common in KB dumps)
     shp_path = Path(shp_path)
     gdf = gpd.read_file(shp_path)
     if gdf.empty:
@@ -124,6 +128,44 @@ def ingest_demographic_csv(csv_path: str | Path, session: Optional[Session] = No
     return updated
 
 
+def build_municipality_layer_from_sectors(
+    source_layer: str = "IBGE Sectors", target_layer: str = "IBGE Municipios", session: Optional[Session] = None
+) -> None:
+    """Aggregate sectors by CD_MUN to produce a municipal tile layer."""
+    with _session_scope(session) as db:
+        src = db.query(VectorLayer).filter_by(name=source_layer).one_or_none()
+        if not src:
+            raise ValueError(f"Source layer {source_layer} not found. Ingest sectors first.")
+
+        tgt = db.query(VectorLayer).filter_by(name=target_layer).one_or_none()
+        if not tgt:
+            tgt = VectorLayer(name=target_layer, source=f"dissolve:{source_layer}", description="Soma de setores por município")
+            db.add(tgt)
+            db.flush()
+
+        db.execute(text("DELETE FROM vector_features WHERE layer_id=:layer_id"), {"layer_id": tgt.id})
+        db.execute(
+            text(
+                """
+                INSERT INTO vector_features (layer_id, properties, geom)
+                SELECT :target_id,
+                    jsonb_build_object(
+                        'CD_MUN', properties->>'CD_MUN',
+                        'NM_MUN', properties->>'NM_MUN',
+                        'NM_UF', properties->>'NM_UF'
+                    ),
+                    ST_Multi(ST_SimplifyPreserveTopology(ST_Union(geom), 0.0001))
+                FROM vector_features
+                WHERE layer_id = :source_id
+                GROUP BY properties->>'CD_MUN', properties->>'NM_MUN', properties->>'NM_UF'
+                """
+            ),
+            {"target_id": tgt.id, "source_id": src.id},
+        )
+        if session is None:
+            db.commit()
+
+
 if __name__ == "__main__":
     import argparse
 
@@ -137,6 +179,12 @@ if __name__ == "__main__":
     csv_parser = subparsers.add_parser("csv", help="Merge demographic CSV")
     csv_parser.add_argument("path", help="Path to CSV with CD_SETOR and demographic columns")
 
+    mun_parser = subparsers.add_parser(
+        "municipios", help="Agrupa setores por município em um novo layer"
+    )
+    mun_parser.add_argument("--source", default="IBGE Sectors", help="Layer de origem (setores)")
+    mun_parser.add_argument("--target", default="IBGE Municipios", help="Nome do layer de municípios")
+
     args = parser.parse_args()
 
     if args.command == "shp":
@@ -145,3 +193,6 @@ if __name__ == "__main__":
     elif args.command == "csv":
         count = ingest_demographic_csv(args.path)
         print(f"Updated {count} features")
+    elif args.command == "municipios":
+        build_municipality_layer_from_sectors(args.source, args.target)
+        print(f"Layer de municípios '{args.target}' gerado a partir de '{args.source}'.")

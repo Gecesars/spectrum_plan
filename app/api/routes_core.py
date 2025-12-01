@@ -229,6 +229,8 @@ def current_user():
 def tile_query(layer_name: str, z: int, x: int, y: int):
     """Return GeoJSON features intersecting a slippy tile for a given layer."""
     limit = max(1, min(int(request.args.get("limit", 500)), 2000))
+    cd_mun = request.args.get("cd_mun")
+    cd_setor = request.args.get("cd_setor")
     bbox = _tile_bbox_py(z, x, y)
     with get_session() as session:
         layer = session.query(VectorLayer).filter_by(name=layer_name).first()
@@ -246,6 +248,10 @@ def tile_query(layer_name: str, z: int, x: int, y: int):
             .where(func.ST_Intersects(VectorFeature.geom, envelope))
             .limit(limit)
         )
+        if cd_mun:
+            stmt = stmt.where(VectorFeature.properties["CD_MUN"].astext == cd_mun)
+        if cd_setor:
+            stmt = stmt.where(VectorFeature.properties["CD_SETOR"].astext == cd_setor)
         rows = session.execute(stmt).all()
 
     features = []

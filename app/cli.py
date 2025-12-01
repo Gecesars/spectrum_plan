@@ -29,6 +29,8 @@ def register_cli(app: Flask) -> None:
         db.session.add(user)
         db.session.commit()
         click.echo(f"User created with id={user.id}")
+    # Alias para permitir `flask user.create ...`
+    app.cli.add_command(create_user, "user.create")
 
     @user_cmd.command("list")
     def list_users():
@@ -67,4 +69,3 @@ def register_cli(app: Flask) -> None:
 
     # Alias
     app.cli.add_command(user_cmd)
-

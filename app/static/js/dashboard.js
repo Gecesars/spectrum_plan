@@ -32,5 +32,77 @@ async function fetchSummary() {
   }
 }
 
-fetchUser();
-fetchSummary();
+async function fetchProjects() {
+  const listEl = document.getElementById("projects-list");
+  const countEl = document.getElementById("projects-count");
+  if (!listEl) return;
+  try {
+    const res = await fetch("/api/projects");
+    if (!res.ok) {
+      listEl.innerHTML = "<p class='muted'>Não foi possível carregar projetos.</p>";
+      return;
+    }
+    const projects = await res.json();
+    if (Array.isArray(projects) && projects.length > 0) {
+      listEl.innerHTML = projects
+        .map(
+          (p) =>
+            `<article class="list-item"><div><h3>${p.name}</h3><p class="muted">${p.description || "Sem descrição"}</p></div><div class="list-actions"><a class="ghost" href="/map?project=${p.id}">Mapa</a></div></article>`
+        )
+        .join("");
+    } else {
+      listEl.innerHTML = "<p class='muted'>Nenhum projeto encontrado.</p>";
+    }
+    if (countEl) countEl.textContent = projects.length ?? 0;
+  } catch (err) {
+    console.error("Failed to load projects", err);
+  }
+}
+
+function attachProjectForm() {
+  const form = document.getElementById("new-project-form");
+  if (!form) return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("project-name").value.trim();
+    const description = document.getElementById("project-description").value.trim();
+    const feedback = document.getElementById("project-feedback");
+    if (!name) return;
+    form.querySelector("button")?.setAttribute("disabled", "disabled");
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description })
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        if (feedback) {
+          feedback.style.display = "block";
+          feedback.classList.add("error");
+          feedback.textContent = payload.error || "Erro ao criar projeto.";
+        }
+      } else {
+        form.reset();
+        if (feedback) {
+          feedback.style.display = "block";
+          feedback.classList.remove("error");
+          feedback.classList.add("success");
+          feedback.textContent = "Projeto criado com sucesso.";
+        }
+        await fetchProjects();
+      }
+    } catch (err) {
+      console.error("Failed to create project", err);
+    } finally {
+      form.querySelector("button")?.removeAttribute("disabled");
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchUser();
+  fetchSummary();
+  fetchProjects();
+  attachProjectForm();
+});
