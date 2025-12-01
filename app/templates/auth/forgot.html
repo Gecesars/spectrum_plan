@@ -1,0 +1,19 @@
+{% extends "auth/base_auth.html" %}
+{% block auth_content %}
+<div class="auth-header">
+  <h2>Recuperar acesso</h2>
+  <p>Informe seu e-mail. Se existir uma conta, enviaremos um link para redefinir a senha.</p>
+</div>
+<form method="post" class="auth-form card-elevated">
+  <label>Email
+    <input type="email" name="email" required placeholder="voce@exemplo.com">
+  </label>
+  <button type="submit">Enviar link de redefinição</button>
+</form>
+{% if reset_link %}
+<div class="flash info">Link gerado: <a href="{{ reset_link }}">{{ reset_link }}</a></div>
+{% endif %}
+<div class="auth-links">
+  <a href="{{ url_for('auth.login_get') }}">Voltar ao login</a>
+</div>
+{% endblock %}

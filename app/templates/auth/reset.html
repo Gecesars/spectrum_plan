@@ -1,0 +1,19 @@
+{% extends "auth/base_auth.html" %}
+{% block auth_content %}
+<div class="auth-header">
+  <h2>Redefinir senha</h2>
+  <p>Crie uma nova senha para sua conta.</p>
+</div>
+<form method="post" class="auth-form card-elevated">
+  <label>Nova senha
+    <input type="password" name="password" required placeholder="Mínimo 8 caracteres, letra e número">
+  </label>
+  <label>Confirmar senha
+    <input type="password" name="password_confirm" required placeholder="Repita a senha">
+  </label>
+  <button type="submit">Atualizar senha</button>
+</form>
+<div class="auth-links">
+  <a href="{{ url_for('auth.login_get') }}">Voltar ao login</a>
+</div>
+{% endblock %}

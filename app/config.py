@@ -121,3 +121,13 @@ def init_db(bind: Optional[Engine] = None) -> None:
     with target.begin() as conn:
         conn.execute(text("SET search_path TO public"))
         Base.metadata.create_all(bind=conn)
+        # Lightweight column sync for User extras (idempotent, Postgres).
+        for col in (
+            "ADD COLUMN IF NOT EXISTS username VARCHAR(255)",
+            "ADD COLUMN IF NOT EXISTS cpf_cnpj VARCHAR(32)",
+            "ADD COLUMN IF NOT EXISTS company VARCHAR(255)",
+            "ADD COLUMN IF NOT EXISTS address VARCHAR(255)",
+            "ADD COLUMN IF NOT EXISTS phone VARCHAR(50)",
+            "ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)",
+        ):
+            conn.execute(text(f"ALTER TABLE public.users {col}"))

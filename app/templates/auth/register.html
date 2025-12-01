@@ -2,22 +2,46 @@
 {% block auth_content %}
 <div class="auth-header">
   <h2>Criar Conta</h2>
-  <p>Preencha seus dados para iniciar no Spectrum.</p>
+  <p>Preencha seus dados para iniciar no Spectrum e confirme o e-mail enviado.</p>
 </div>
-<form method="post" class="auth-form card-elevated">
-  <label>Nome completo
-    <input type="text" name="full_name" required placeholder="Seu nome">
-  </label>
-  <label>Email
+<form method="post" class="auth-form card-elevated form-grid">
+  <div class="field">
+    <label>Nome completo</label>
+    <input type="text" name="full_name" required placeholder="Nome completo">
+  </div>
+  <div class="field">
+    <label>CPF/CNPJ</label>
+    <input type="text" name="cpf_cnpj" placeholder="000.000.000-00">
+  </div>
+  <div class="field">
+    <label>Usuário</label>
+    <input type="text" name="username" placeholder="username">
+  </div>
+  <div class="field">
+    <label>Email</label>
     <input type="email" name="email" required placeholder="voce@exemplo.com">
-  </label>
-  <label>Senha
+  </div>
+  <div class="field">
+    <label>Empresa</label>
+    <input type="text" name="company" placeholder="Empresa/Org.">
+  </div>
+  <div class="field">
+    <label>Telefone</label>
+    <input type="text" name="phone" placeholder="(11) 98888-0000">
+  </div>
+  <div class="field full">
+    <label>Endereço</label>
+    <input type="text" name="address" placeholder="Rua, número, cidade/UF">
+  </div>
+  <div class="field">
+    <label>Senha</label>
     <input type="password" name="password" required placeholder="Mínimo 8 caracteres, letra e número">
-  </label>
-  <label>Confirmar senha
+  </div>
+  <div class="field">
+    <label>Confirmar senha</label>
     <input type="password" name="password_confirm" required placeholder="Repita a senha">
-  </label>
-  <button type="submit">Registrar</button>
+  </div>
+  <button type="submit">Registrar e enviar confirmação</button>
 </form>
 <div class="auth-links">
   <span>Já tem conta?</span> <a href="{{ url_for('auth.login_get') }}">Entrar</a>

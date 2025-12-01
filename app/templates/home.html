@@ -1,12 +1,12 @@
 {% extends "base_portal.html" %}
 {% block content %}
 <section class="welcome">
-  <h1>Welcome <span id="welcome-name">User</span> to the Spectrum Portal.</h1>
-  <p>You are logged in as <strong id="welcome-email">email@example.com</strong>. Access expires in: <strong id="welcome-days">--</strong> days.</p>
+  <h1>Welcome, <span id="welcome-name">{{ welcome_name }}</span> ao Spectrum Portal.</h1>
+  <p>Você está logado como <strong id="welcome-email">{{ welcome_email }}</strong>. Expira em: <strong id="welcome-days">{{ welcome_days }}</strong> dias.</p>
   <div class="summary-badges">
-    <span class="badge">Projects: <strong id="summary-projects">--</strong></span>
-    <span class="badge">Simulations: <strong id="summary-simulations">--</strong></span>
-    <span class="badge">Artifacts: <strong id="summary-artifacts">--</strong></span>
+    <span class="badge">Projects: <strong id="summary-projects">{{ projects_count }}</strong></span>
+    <span class="badge">Simulations: <strong id="summary-simulations">{{ simulations_count }}</strong></span>
+    <span class="badge">Artifacts: <strong id="summary-artifacts">{{ artifacts_count }}</strong></span>
   </div>
 </section>
 

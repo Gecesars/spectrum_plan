@@ -17,6 +17,7 @@
         <a href="/simulations" class="{% if request.path.startswith('/simulations') %}active{% endif %}">Simulations</a>
         <a href="/database" class="{% if request.path.startswith('/database') %}active{% endif %}">Database</a>
         <a href="/map" class="{% if request.path.startswith('/map') %}active{% endif %}">Map</a>
+        <a href="/account" class="{% if request.path.startswith('/account') %}active{% endif %}">Account</a>
       {% else %}
         <a href="/auth/login" class="{% if request.path.startswith('/auth/login') %}active{% endif %}">Login</a>
         <a href="/auth/register" class="{% if request.path.startswith('/auth/register') %}active{% endif %}">Register</a>

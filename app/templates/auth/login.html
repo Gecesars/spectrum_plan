@@ -13,6 +13,17 @@
   </label>
   <label class="remember"><input type="checkbox" name="remember"> Lembrar</label>
   <button type="submit">Entrar</button>
+  <div class="auth-links">
+    <a href="{{ url_for('auth.forgot_get') }}">Esqueci minha senha</a>
+  </div>
+  <div class="social-login">
+    <p class="muted">Ou entre com</p>
+    <div class="social-buttons">
+      <button type="button" class="ghost">Google</button>
+      <button type="button" class="ghost">GitHub</button>
+    </div>
+    <p class="muted small">Integração OAuth placeholder (configure credenciais para ativar).</p>
+  </div>
 </form>
 <div class="auth-links">
   <span>Não tem conta?</span> <a href="{{ url_for('auth.register_get') }}">Criar conta</a>

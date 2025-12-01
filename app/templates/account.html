@@ -1,0 +1,44 @@
+{% extends "base_portal.html" %}
+{% block content %}
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Conta</p>
+    <h1>Gerenciamento do perfil</h1>
+    <p class="muted">Atualize sua senha e acompanhe créditos/billing (placeholder).</p>
+  </div>
+</section>
+
+<section class="card card-surface">
+  <h2 class="section-title">Dados básicos</h2>
+  <div class="list">
+    <div class="list-item">
+      <div><strong>Nome</strong><p class="muted">{{ current_user.full_name }}</p></div>
+      <div><strong>Email</strong><p class="muted">{{ current_user.email }}</p></div>
+    </div>
+    <div class="list-item">
+      <div><strong>Telefone</strong><p class="muted">{{ current_user.phone or '—' }}</p></div>
+      <div><strong>Empresa</strong><p class="muted">{{ current_user.company or '—' }}</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="card card-surface">
+  <h2 class="section-title">Alterar senha</h2>
+  <form method="post" class="stacked-form">
+    <div class="field">
+      <label>Nova senha</label>
+      <input type="password" name="password" required placeholder="Mínimo 8 caracteres, letra e número">
+    </div>
+    <div class="field">
+      <label>Confirmar senha</label>
+      <input type="password" name="password_confirm" required placeholder="Repita a senha">
+    </div>
+    <button type="submit" class="primary">Salvar nova senha</button>
+  </form>
+</section>
+
+<section class="card card-surface">
+  <h2 class="section-title">Créditos & Billing</h2>
+  <p class="muted">Placeholder: exibir saldo, histórico de cobranças e meios de pagamento.</p>
+</section>
+{% endblock %}

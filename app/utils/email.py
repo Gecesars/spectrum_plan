@@ -44,3 +44,44 @@ def send_verification_email(to_email: str, token: str) -> None:
                 smtp.send_message(msg)
     except Exception as exc:  # pragma: no cover
         print(f"Falha ao enviar e-mail para {to_email}: {exc}")
+
+
+def send_password_reset_email(to_email: str, token: str) -> None:
+    """Send password reset email; falls back to console log."""
+    cfg = current_app.config
+    server = cfg.get("MAIL_SERVER")
+    username = cfg.get("MAIL_USERNAME")
+    password = cfg.get("MAIL_PASSWORD")
+    port = cfg.get("MAIL_PORT", 465)
+    use_tls = bool(cfg.get("MAIL_USE_TLS", False))
+    use_ssl = bool(cfg.get("MAIL_USE_SSL", False))
+    sender = cfg.get("MAIL_DEFAULT_SENDER", "noreply@spectrum.local")
+
+    reset_url = url_for("auth.reset_get", token=token, _external=True)
+    msg = EmailMessage()
+    msg["Subject"] = "Redefinição de senha - Spectrum"
+    msg["From"] = sender
+    msg["To"] = to_email
+    msg.set_content(
+        f"Recebemos um pedido para redefinir sua senha.\n\n"
+        f"Acesse o link para continuar: {reset_url}\n\n"
+        f"Se não solicitou, ignore este e-mail."
+    )
+
+    if not server or not username or not password:
+        print(f"[RESET EMAIL MOCK] Destinatário: {to_email} Token: {token} Link: {reset_url}")
+        return
+
+    try:
+        if use_ssl:
+            with smtplib.SMTP_SSL(server, port) as smtp:
+                smtp.login(username, password)
+                smtp.send_message(msg)
+        else:
+            with smtplib.SMTP(server, port) as smtp:
+                if use_tls:
+                    smtp.starttls()
+                smtp.login(username, password)
+                smtp.send_message(msg)
+    except Exception as exc:  # pragma: no cover
+        print(f"Falha ao enviar e-mail de reset para {to_email}: {exc}")
