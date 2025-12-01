@@ -3,7 +3,7 @@ from __future__ import annotations
 import smtplib
 from email.message import EmailMessage
 
-from flask import current_app, url_for, request
+from flask import current_app, url_for
 
 
 def send_verification_email(to_email: str, token: str) -> None:
@@ -13,8 +13,8 @@ def send_verification_email(to_email: str, token: str) -> None:
     username = cfg.get("MAIL_USERNAME")
     password = cfg.get("MAIL_PASSWORD")
     port = cfg.get("MAIL_PORT", 465)
-    use_tls = cfg.get("MAIL_USE_TLS", False)
-    use_ssl = cfg.get("MAIL_USE_SSL", False)
+    use_tls = bool(cfg.get("MAIL_USE_TLS", False))
+    use_ssl = bool(cfg.get("MAIL_USE_SSL", False))
     sender = cfg.get("MAIL_DEFAULT_SENDER", "noreply@spectrum.local")
 
     verify_url = url_for("auth.confirm_account", token=token, _external=True)
