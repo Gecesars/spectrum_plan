@@ -1,0 +1,50 @@
+<section class="section">
+    <h2>Página 2 — Projeto Técnico</h2>
+    <div class="metrics">
+        <div class="metric">
+            <strong>ERP</strong><br>{{ erp.erp_kw }} kW
+        </div>
+        <div class="metric">
+            <strong>EIRP</strong><br>{{ erp.eirp_dbw }} dBW
+        </div>
+        <div class="metric">
+            <strong>Perdas</strong><br>{{ erp.losses_db }} dB
+        </div>
+        <div class="metric">
+            <strong>Direção Máx.</strong><br>{{ patterns.max_dir }}°
+        </div>
+        <div class="metric">
+            <strong>HPBW</strong><br>{{ patterns.hpbw }}°
+        </div>
+    </div>
+    <h3>Características elétricas</h3>
+    <table>
+        <tr>
+            <th>Potência TX (W)</th>
+            <th>Ganho TX (dBi)</th>
+            <th>Perdas (dB)</th>
+            <th>Polarização</th>
+        </tr>
+        <tr>
+            <td>{{ system.potencia_w or system.potencia or '-' }}</td>
+            <td>{{ system.ganho_tx_dbi or system.ganho_dbi or '-' }}</td>
+            <td>{{ system.perdas_db or system.perdas or '-' }}</td>
+            <td>{{ system.polarizacao or '-' }}</td>
+        </tr>
+    </table>
+    <h3>Características mecânicas</h3>
+    <table>
+        <tr>
+            <th>Modelo</th>
+            <th>Altura Torre</th>
+            <th>Azimute</th>
+            <th>Tilt</th>
+        </tr>
+        <tr>
+            <td>{{ system.modelo or '-' }}</td>
+            <td>{{ system.altura_torre or '-' }} m</td>
+            <td>{{ system.azimute or '-' }}°</td>
+            <td>{{ system.tilt or '-' }}°</td>
+        </tr>
+    </table>
+</section>

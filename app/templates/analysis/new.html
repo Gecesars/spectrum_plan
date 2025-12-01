@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/cobertura.css') }}">
+<!-- Custom overrides if needed -->
+<style>
+    .analysis-container {
+        max_width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .coverage-header {
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <form action="{{ url_for('analysis.new_analysis') }}" method="POST" id="coberturaForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() if csrf_token else '' }}">
+
+        <!-- Project Selection (Custom addition to match backend requirement) -->
+        <section class="coverage-container mb-4">
+            <header class="coverage-header">
+                <h1 class="mb-1">Nova Análise</h1>
+                <p class="text-muted">Configure o projeto e a estação para iniciar.</p>
+            </header>
+
+            <article class="coverage-card mb-4">
+                <h3 class="mb-3">Projeto</h3>
+                <div class="form-grid">
+                    <div>
+                        <label for="project_id" class="form-label">Selecionar Projeto Existente</label>
+                        <select id="project_id" name="project_id" class="form-select">
+                            <option value="">-- Novo Projeto --</option>
+                            {% for project in projects %}
+                            <option value="{{ project.id }}">{{ project.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="new_project_name" class="form-label">Ou Criar Novo Projeto</label>
+                        <input type="text" id="new_project_name" name="new_project_name" class="form-control"
+                            placeholder="Nome do Projeto">
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- Station Positioning -->
+        <section class="coverage-container">
+            <article class="coverage-card mb-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                    <h3 class="mb-0">Posicionamento da Estação</h3>
+                    <div class="coverage-secondary-actions">
+                        <!-- Placeholders for future JS implementation -->
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="openManualCoordinatesBtn"
+                            data-bs-toggle="modal" data-bs-target="#coordinatesModal">Inserir coordenadas</button>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div>
+                        <label for="station_name" class="form-label">Nome da Estação</label>
+                        <input type="text" id="station_name" name="station_name" class="form-control" required
+                            placeholder="Ex: Site Alpha">
+                    </div>
+                    <div>
+                        <label for="site_elevation" class="form-label">Elevação do Terreno (m)</label>
+                        <input type="number" id="site_elevation" name="site_elevation" class="form-control" value="0">
+                    </div>
+                </div>
+
+                <div class="form-grid mt-3">
+                    <div>
+                        <label for="latitude" class="form-label">Latitude (dec)</label>
+                        <input type="number" step="any" id="latitude" name="latitude" class="form-control" required
+                            placeholder="-23.55">
+                    </div>
+                    <div>
+                        <label for="longitude" class="form-label">Longitude (dec)</label>
+                        <input type="number" step="any" id="longitude" name="longitude" class="form-control" required
+                            placeholder="-46.63">
+                    </div>
+                </div>
+
+                <div class="form-grid mt-3">
+                    <div>
+                        <label for="antenna_height" class="form-label">Altura da Antena (m)</label>
+                        <input type="number" id="antenna_height" name="antenna_height" class="form-control" min="0"
+                            step="any" required value="30">
+                    </div>
+                    <!-- rxHeight not in backend yet, keeping for UI completeness if needed, or omit -->
+                </div>
+            </article>
+
+            <!-- RF Parameters -->
+            <article class="coverage-card mb-4">
+                <h3 class="mb-3">Dados de Transmissão</h3>
+                <div class="form-grid">
+                    <div>
+                        <label for="station_type" class="form-label">Tipo de Estação</label>
+                        <select id="station_type" name="station_type" class="form-select">
+                            <option value="FM">FM</option>
+                            <option value="TV">TV</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="service_class" class="form-label">Classe de Serviço</label>
+                        <select id="service_class" name="service_class" class="form-select">
+                            <option value="A">Classe A</option>
+                            <option value="B">Classe B</option>
+                            <option value="C">Classe C</option>
+                            <option value="E">Classe E</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="frequency_mhz" class="form-label">Frequência (MHz)</label>
+                        <input type="number" id="frequency_mhz" name="frequency_mhz" class="form-control" min="0"
+                            step="any" required>
+                    </div>
+                    <div>
+                        <label for="erp_kw" class="form-label">ERP (kW)</label>
+                        <input type="number" id="erp_kw" name="erp_kw" class="form-control" min="0" step="any" required>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Antenna System -->
+            <article class="coverage-card mb-4">
+                <h3 class="mb-3">Sistema Irradiante</h3>
+                <div class="form-grid">
+                    <div>
+                        <label for="antenna_model_id" class="form-label">Modelo de Antena</label>
+                        <select id="antenna_model_id" name="antenna_model_id" class="form-select">
+                            <option value="">-- Omni-direcional (Padrão) --</option>
+                            {% for model in antenna_models %}
+                            <option value="{{ model.id }}">{{ model.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="polarization" class="form-label">Polarização</label>
+                        <select id="polarization" name="polarization" class="form-select">
+                            <option value="Vertical">Vertical</option>
+                            <option value="Horizontal">Horizontal</option>
+                            <option value="Circular">Circular</option>
+                            <option value="Elliptical">Elliptical</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="azimuth" class="form-label">Azimute (°)</label>
+                        <input type="number" id="azimuth" name="azimuth" class="form-control" min="0" max="359" step="1"
+                            value="0">
+                    </div>
+                    <div>
+                        <label for="mechanical_tilt" class="form-label">Tilt Mecânico (°)</label>
+                        <input type="number" id="mechanical_tilt" name="mechanical_tilt" class="form-control" step="0.5"
+                            value="0">
+                    </div>
+                </div>
+
+                <!-- Visualization Container -->
+                <div class="antenna-visualization mt-3" id="antenna-viz-container"
+                    style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px;">
+                    <h5 class="mb-3">Pré-visualização do Diagrama</h5>
+                    <div class="d-flex justify-content-center gap-4 flex-wrap">
+                        <div class="text-center">
+                            <h6 class="text-muted">Horizontal</h6>
+                            <canvas id="canvas-horizontal" width="250" height="250"
+                                style="background: white; border-radius: 50%;"></canvas>
+                        </div>
+                        <div class="text-center">
+                            <h6 class="text-muted">Vertical</h6>
+                            <canvas id="canvas-vertical" width="250" height="250"
+                                style="background: white; border-radius: 50%;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <div class="coverage-actions d-flex flex-wrap gap-2 justify-content-end mt-4">
+                <a href="{{ url_for('web.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-brand btn-primary">Salvar e Analisar</button>
+            </div>
+        </section>
+    </form>
+</div>
+
+<!-- Coordinates Modal (Adapted from example) -->
+<div class="modal fade" id="coordinatesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Inserir coordenadas manualmente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">Insira em decimal. A conversão DMS será adicionada futuramente.</p>
+                <div class="mb-3">
+                    <label class="form-label">Latitude</label>
+                    <input type="number" id="modalLat" class="form-control" placeholder="-23.55">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Longitude</label>
+                    <input type="number" id="modalLon" class="form-control" placeholder="-46.63">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="applyCoordinatesBtn">Aplicar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- We use our own analysis.js but adapted to include visualization logic -->
+<script src="{{ url_for('static', filename='js/analysis.js') }}"></script>
+<script>
+    // Simple script to handle modal application
+    document.getElementById('applyCoordinatesBtn').addEventListener('click', function () {
+        const lat = document.getElementById('modalLat').value;
+        const lon = document.getElementById('modalLon').value;
+        if (lat && lon) {
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('coordinatesModal'));
+            modal.hide();
+        }
+    });
+</script>
+{% endblock %}

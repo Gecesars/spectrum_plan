@@ -69,3 +69,10 @@ def register_cli(app: Flask) -> None:
 
     # Alias
     app.cli.add_command(user_cmd)
+
+    @app.cli.command("seed-regulatory")
+    def seed_regulatory():
+        """Seed regulatory data (FM classes)."""
+        from app.seeds.regulatory_data import seed_regulatory_data
+        seed_regulatory_data()
+        click.echo("Regulatory data seeded.")

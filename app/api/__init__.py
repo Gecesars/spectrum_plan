@@ -15,3 +15,6 @@ def register_api(app: Flask) -> None:
     app.register_blueprint(auth_api_bp, url_prefix="/api/auth")
     app.register_blueprint(projects_bp, url_prefix="/api/projects")
     app.register_blueprint(core_bp, url_prefix="/api")
+    
+    from app.api.routes_analysis import analysis_bp
+    app.register_blueprint(analysis_bp, url_prefix="/analysis")

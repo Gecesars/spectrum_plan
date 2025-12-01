@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Gauges</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .gauges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .gauge {
+            width: 200px;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .slider-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .slider-container label {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+
+        .slider-container input {
+            width: 200px;
+        }
+    </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/eve.js/0.8.1/eve.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/justgage/1.2.9/justgage.min.js"></script>
+</head>
+<body>
+    <h1>Sensores</h1>
+    <div class="gauges">
+        <div id="temperature-gauge" class="gauge"></div>
+        <div id="pressure-gauge" class="gauge"></div>
+        <div id="wind-speed-gauge" class="gauge"></div>
+    </div>
+    <div class="slider-container">
+        <label for="interval-slider">Update Interval (seconds):</label>
+        <input type="range" id="interval-slider" min="1" max="60" value="5">
+        <span id="interval-value">5</span> seconds
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var tempGauge = new JustGage({
+                id: "temperature-gauge",
+                value: 0,
+                min: 0,
+                max: 40,
+                title: "Temperature (°C)"
+            });
+
+            var pressureGauge = new JustGage({
+                id: "pressure-gauge",
+                value: 0,
+                min: 950,
+                max: 1050,
+                title: "Pressure (hPa)"
+            });
+
+            var windSpeedGauge = new JustGage({
+                id: "wind-speed-gauge",
+                value: 0,
+                min: 0,
+                max: 20,
+                title: "Wind Speed (m/s)"
+            });
+
+            function updateGauges() {
+                fetch('http://localhost:8000/temperature')
+                    .then(response => response.json())
+                    .then(data => tempGauge.refresh(data.temperature))
+                    .catch(error => console.error('Error fetching temperature:', error));
+
+                fetch('http://localhost:8000/pressure')
+                    .then(response => response.json())
+                    .then(data => pressureGauge.refresh(data.pressure))
+                    .catch(error => console.error('Error fetching pressure:', error));
+
+                fetch('http://localhost:8000/wind_speed')
+                    .then(response => response.json())
+                    .then(data => windSpeedGauge.refresh(data.wind_speed))
+                    .catch(error => console.error('Error fetching wind speed:', error));
+            }
+
+            document.getElementById('interval-slider').addEventListener('input', function() {
+                var interval = this.value;
+                document.getElementById('interval-value').textContent = interval;
+                clearInterval(updateInterval);
+                updateInterval = setInterval(updateGauges, interval * 1000);
+            });
+
+            var updateInterval = setInterval(updateGauges, 1000);  // Default 5 seconds
+
+            // Initial update
+            updateGauges();
+        });
+    </script>
+</body>
+</html>

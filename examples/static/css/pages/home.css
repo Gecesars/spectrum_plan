@@ -1,0 +1,160 @@
+.report-home {
+    max-width: 1380px;
+}
+
+.home-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 32px 90px -58px rgba(13, 110, 253, 0.65);
+}
+
+.hero-card {
+    background: radial-gradient(circle at top right, rgba(13, 110, 253, 0.08), rgba(13, 110, 253, 0));
+}
+
+.hero-title {
+    font-size: 2.2rem;
+    font-weight: 600;
+}
+
+.hero-selector .form-select {
+    min-width: 220px;
+    border-radius: 12px;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .24em;
+    color: #7a8ab5;
+}
+
+.badge-soft {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.9rem;
+    font-size: .75rem;
+    font-weight: 600;
+    color: #0b4cb8;
+    background: rgba(13, 110, 253, 0.14);
+    border-radius: 999px;
+}
+
+.stat-label,
+.hero-stats .stat-label {
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-size: .7rem;
+    color: #7a819e;
+}
+
+.hero-stats strong {
+    font-size: 1.05rem;
+    display: block;
+}
+
+.coverage-card .coverage-preview img,
+.artifact-tile img {
+    border-radius: 16px;
+    border: 1px solid rgba(13, 110, 253, 0.12);
+}
+
+.coverage-meta {
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+.colorbar img {
+    max-height: 90px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: #fff;
+}
+
+.metrics-card {
+    background: #0d1c3f;
+    color: #fff;
+    box-shadow: none;
+}
+
+.metrics-card .metric-title {
+    text-transform: uppercase;
+    font-size: .75rem;
+    letter-spacing: .08em;
+    color: rgba(255, 255, 255, 0.65);
+    margin-bottom: .3rem;
+}
+
+.metrics-card .metric-row {
+    font-size: .92rem;
+    padding: .25rem 0;
+}
+
+.metrics-card .metric-row span:last-child {
+    font-weight: 600;
+}
+
+.metrics-card .metric-row .text-muted {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.artifact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.25rem;
+}
+
+.artifact-tile {
+    background: #f8f9ff;
+    border-radius: 18px;
+    border: 1px solid rgba(13, 110, 253, 0.12);
+    padding: 0.75rem;
+    text-align: center;
+}
+
+.artifact-tile figcaption {
+    margin-top: .35rem;
+    font-size: .78rem;
+    font-weight: 600;
+    color: #4a5575;
+}
+
+.empty-state {
+    background: radial-gradient(circle at top, rgba(13, 110, 253, 0.12), rgba(13, 110, 253, 0.02));
+    border: 1px dashed rgba(13, 110, 253, 0.35);
+}
+
+.empty-tile {
+    border: 1px dashed rgba(13, 110, 253, 0.35);
+    border-radius: 18px;
+    background: rgba(13, 110, 253, 0.04);
+}
+
+.report-home textarea {
+    border-radius: 16px;
+    min-height: 150px;
+}
+
+.table-sm th,
+.table-sm td {
+    padding: 0.4rem 0.6rem;
+}
+
+.report-item + .report-item {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    margin-top: .8rem;
+    padding-top: .8rem;
+}
+
+@media (max-width: 992px) {
+    .home-card {
+        padding: 1.5rem;
+    }
+    .hero-stats {
+        flex-direction: column;
+    }
+}

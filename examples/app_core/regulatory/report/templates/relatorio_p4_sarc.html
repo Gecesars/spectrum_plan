@@ -1,0 +1,22 @@
+<section class="section">
+    <h2>Página 4 — Enlaces SARC</h2>
+    <table>
+        <tr>
+            <th>Identificação</th>
+            <th>FSPL (dB)</th>
+            <th>RX (dBm)</th>
+            <th>Margem (dB)</th>
+        </tr>
+        {% for item in sarc_budget.links %}
+        <tr>
+            <td>{{ item.identificacao }}</td>
+            <td>{{ item.fspl_db }}</td>
+            <td>{{ item.rx_dbm }}</td>
+            <td>{{ item.margin_db }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% if sarc_budget.links_sem_margem %}
+        <p class="muted">Links com margem &lt; 3 dB: {{ sarc_budget.links_sem_margem|join(', ') }}</p>
+    {% endif %}
+</section>

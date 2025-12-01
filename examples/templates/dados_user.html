@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Dados Salvos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dados Salvos</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Modelo de Propagação</th>
+                    <th>Frequência (MHz)</th>
+                    <th>Altura da Torre (m)</th>
+                    <th>Tipo de Cabo</th>
+                    <th>Potência de Transmissão (W)</th>
+                    <th>Ganho da Antena (dBd)</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dado in dados_salvos %}
+                <tr>
+                    <td>{{ dado.propagation_model }}</td>
+                    <td>{{ dado.frequencia }}</td>
+                    <td>{{ dado.tower_height }}</td>
+                    <td>{{ dado.cable_type }}</td>
+                    <td>{{ dado.transmission_power }}</td>
+                    <td>
+                        {% if dado.antenna_gain is not none %}
+                            {{ (dado.antenna_gain - 2.15)|round(2) }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>{{ dado.latitude }}</td>
+                    <td>{{ dado.longitude }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

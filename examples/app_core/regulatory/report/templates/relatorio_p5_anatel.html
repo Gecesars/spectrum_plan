@@ -1,0 +1,29 @@
+<section class="section">
+    <h2>Página 5 — Checklist Básico de Radiodifusão</h2>
+    <p class="muted">Itens alinhados ao caderno "Básico de Radiodifusão" (ANATEL/CMPRL). Campos pendentes aparecem com status "pending".</p>
+    <table>
+        <tr>
+            <th>Código</th>
+            <th>Descrição</th>
+            <th>Status</th>
+            <th>Dados</th>
+        </tr>
+        {% for entry in anatel_basic_form %}
+        <tr>
+            <td>{{ entry.code }}</td>
+            <td>{{ entry.title }}</td>
+            <td>{{ entry.status }}</td>
+            <td>
+                <ul>
+                {% for key, value in entry.data.items() %}
+                    <li><strong>{{ key }}:</strong> {{ value if value is not none else '—' }}</li>
+                {% endfor %}
+                </ul>
+                {% if entry.notes %}
+                    <p class="muted">{{ entry.notes }}</p>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</section>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensors</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script>
+</head>
+<body>
+    <h1>Sensor Data</h1>
+    <canvas id="tempGauge" width="300" height="300"></canvas>
+    <canvas id="humGauge" width="300" height="300"></canvas>
+    <canvas id="heatIndexGauge" width="300" height="300"></canvas>
+
+    <h2>Control RGB LED</h2>
+    <button onclick="controlLED('red', 'on')">Red On</button>
+    <button onclick="controlLED('red', 'off')">Red Off</button>
+    <button onclick="controlLED('green', 'on')">Green On</button>
+    <button onclick="controlLED('green', 'off')">Green Off</button>
+    <button onclick="controlLED('blue', 'on')">Blue On</button>
+    <button onclick="controlLED('blue', 'off')">Blue Off</button>
+
+    <script>
+        const tempOpts = {
+            angle: 0, lineWidth: 0.2, radiusScale: 1, pointer: {length: 0.6, strokeWidth: 0.035, color: '#000000'},
+            staticZones: [{strokeStyle: "#F03E3E", min: 0, max: 50}],
+            staticLabels: {font: "10px sans-serif", labels: [0, 10, 20, 30, 40, 50], color: "#000000", fractionDigits: 0},
+            limitMax: false, limitMin: false, highDpiSupport: true,
+        };
+        const humOpts = {...tempOpts, staticZones: [{strokeStyle: "#1E90FF", min: 0, max: 100}]};
+        const heatIndexOpts = {...tempOpts, staticZones: [{strokeStyle: "#FF8C00", min: 0, max: 50}]};
+        const tempGauge = new Gauge(document.getElementById("tempGauge")).setOptions(tempOpts);
+        const humGauge = new Gauge(document.getElementById("humGauge")).setOptions(humOpts);
+        const heatIndexGauge = new Gauge(document.getElementById("heatIndexGauge")).setOptions(heatIndexOpts);
+        tempGauge.maxValue = 50; tempGauge.setMinValue(0); tempGauge.animationSpeed = 32;
+        humGauge.maxValue = 100; humGauge.setMinValue(0); humGauge.animationSpeed = 32;
+        heatIndexGauge.maxValue = 50; heatIndexGauge.setMinValue(0); heatIndexGauge.animationSpeed = 32;
+
+        async function fetchSensorData() {
+            const response = await fetch('http://192.168.50.137:5000/sensor_data');
+            const data = await response.json();
+            tempGauge.set(data.temperature);
+            humGauge.set(data.humidity);
+            heatIndexGauge.set(data.heat_index);
+        }
+
+        async function controlLED(color, state) {
+            const response = await fetch('http://192.168.50.137:5000/control_led', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({color: color, state: state})
+            });
+            const result = await response.json();
+            if (result.status !== 'success') {
+                alert('Failed to control LED');
+            }
+        }
+
+        setInterval(fetchSensorData, 2000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+function GerarMancha() {
+    document.getElementById('spinner').style.display = 'block'; // Mostra o spinner
+    var raio = document.getElementById('raioCobertura').value;
+
+    if (raio && userId) {
+        var dataToSend = JSON.stringify({
+            "user_id": userId,
+            "radius": raio
+        });
+
+        fetch('/calculate-coverage', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: dataToSend
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('spinner').style.display = 'none'; // Oculta o spinner
+            if (data.features && data.features.length > 0) {
+                // Converte os recursos GeoJSON em uma matriz de pontos do Google Maps
+                var heatmapData = data.features.map(function(feature) {
+                    return new google.maps.LatLng(
+                        feature.geometry.coordinates[1],
+                        feature.geometry.coordinates[0]
+                    );
+                });
+
+                // Se já houver uma camada de heatmap, remova-a
+                if (window.heatmap) {
+                    heatmap.setMap(null);
+                }
+
+                // Cria a nova camada de heatmap com os dados
+                window.heatmap = new google.maps.visualization.HeatmapLayer({
+                    data: heatmapData,
+                    map: map
+                });
+
+            } else {
+                alert("Não foi possível gerar a mancha de cobertura.");
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            document.getElementById('spinner').style.display = 'none'; // Oculta o spinner
+            alert("Erro ao solicitar a geração da mancha de cobertura.");
+        });
+    } else {
+        alert("Por favor, insira a distância máxima (raio) para gerar a mancha de cobertura.");
+        document.getElementById('spinner').style.display = 'none'; // Oculta o spinner
+    }
+}
+ <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGKqYhSjsVLVAnT_xRruUB8RFN5pjziwk&callback=initMap" async defer></script>
+
+  # # Gera o heatmap
+        # fig, ax = plt.subplots()
+        # cim = ax.pcolormesh(
+        #     _lons, _lats, _total_atten,
+        #     shading='auto',
+        #     cmap='inferno'
+        # )
+        # plt.colorbar(cim, ax=ax, extend='both')
+    
+        # ax.set_xlabel('Longitude [deg]')
+        # ax.set_ylabel('Latitude [deg]')
+        # plt.title('Atenuação do Caminho [dB]')
+    
+        # # Salva a imagem em um buffer de memória, não em arquivo
+        # img_buffer = io.BytesIO()
+        # plt.savefig(img_buffer, format='png')
+        # img_buffer.seek(0)
+        # image_base64 = base64.b64encode(img_buffer.getvalue()).decode('utf-8')
+        # img_buffer.close()
+        # plt.close(fig)7
+
+              #  ax.set_xlim(lon_center.to(u.deg).value - radius_degrees_lon, lon_center.to(u.deg).value + radius_degrees_lon)
+      #  ax.set_ylim(lat_center.to(u.deg).value - radius_degrees_lat, lat_center.to(u.deg).value + radius_degrees_lat)
+
+      function processarDadosElevation(dados) {
+    // Aqui você pode criar uma camada no mapa para cada ponto de dados
+    dados.forEach(dado => {
+        let latLng = new google.maps.LatLng(dado.latitude, dado.longitude);
+        let marker = new google.maps.Marker({
+            position: latLng,
+            map: map,
+            title: `Atenuação: ${dado.atenuacao} dB`
+        });
+        // Adiciona uma info window para cada marcador
+        let infoWindow = new google.maps.InfoWindow({
+            content: `Atenuação: ${dado.atenuacao} dB`
+        });
+        marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+        });
+    });
+}
+
+
+ def generate_signal_level_image(lons, lats, _total_atten, radius_km, lon_center, lat_center, Ptx_W, G_tx_dBi,min_val,max_val):
+        fig, ax = plt.subplots()
+
+        
+
+
+        P_dBm = 10 * math.log10(Ptx_W / 0.001)  # Dividindo por 0.001 converte watts para miliwatts
+        # Conversão de potência de transmissão e ganho de antena para dB
+        P_tx_dBm = P_dBm*(u.dB(u.mW))
+        G_tx_dBi = G_tx_dBi*(u.dB)
+
+       # Cálculo do nível de sinal
+       
+        signal_levels = P_tx_dBm.value + G_tx_dBi.value - _total_atten.to(u.dB).value
+
+            # Criando um meshgrid com as coordenadas
+        lon_grid, lat_grid = np.meshgrid(lons, lats)
+        try:
+            min_val = float(min_val) if min_val is not None else np.nanmin(signal_levels)
+            max_val = float(max_val) if max_val is not None else np.nanmax(signal_levels)
+        except ValueError:
+            raise ValueError("Os valores de mínimo e máximo devem ser numéricos.")
+
+        # Verificação lógica para garantir que min_val é menor que max_val
+        if min_val >= max_val:
+            raise ValueError("O valor mínimo deve ser menor que o valor máximo.")
+
+        # Calculando distâncias de cada ponto no grid ao centro em graus
+        dist = np.sqrt((lon_grid - lon_center.to(u.deg).value)**2 + (lat_grid - lat_center.to(u.deg).value)**2)
+
+            # Conversão da distância de graus para quilômetros
+        earth_radius_km = 6371.0
+        dist_km = dist * (np.pi/180) * earth_radius_km
+         # Aplicar a máscara para distâncias maiores que o raio
+        signal_levels[dist_km > radius_km] = np.nan  # Atribuindo NaN para valores fora do círculo
+        # Configurando os níveis do gráfico baseados nos valores mínimos e máximos fornecidos
+        # if isinstance(min_val, list):
+        #    min_val = min_val[0] if min_val else None
+        # if isinstance(max_val, list):
+        #    max_val = max_val[0] if max_val else None
+
+        # Conversão e validação dos valores de entrada
+        
+
+
+        levels = np.linspace(min_val, max_val, 100)
+        # Uso de pcolormesh para uma abordagem mais robusta
+        mesh = ax.pcolormesh(lon_grid, lat_grid, signal_levels, cmap='rainbow', shading='auto', vmin=min_val, vmax=max_val)
+
+        # Definindo os níveis para o gráfico de contornos
+       # levels = np.linspace(np.nanmin(signal_levels), np.nanmax(signal_levels), 100)
+       # cim = ax.contourf(lon_grid, lat_grid, signal_levels, levels=levels, cmap='rainbow')
+
+         # Adicionar barra de cores
+        cax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+        cbar = plt.colorbar(mesh, cax=cax, orientation='vertical', label='Nível de Sinal [dBm]')
+
+        # Adicionar círculo de cobertura
+        earth_radius_km = 6371.0
+        radius_degrees_lat = radius_km / (earth_radius_km * (np.pi/180))
+        radius_degrees_lon = radius_km / (earth_radius_km * np.cos(np.radians(lat_center.to(u.deg).value)) * (np.pi/180))
+
+        circle = plt.Circle((lon_center.to(u.deg).value, lat_center.to(u.deg).value),
+                           max(radius_degrees_lon, radius_degrees_lat),
+                           color='red', fill=False, linestyle='--')
+        ax.add_artist(circle)
+       # ax.set_aspect('equal', adjustable='box')
+        #plt.axis('off')  # Desativa os eixos para uma visualização limpa
+        # Salvar a figura em um buffer
+        img_buffer = io.BytesIO()
+        plt.savefig(img_buffer, format='png', transparent=True)
+        img_buffer.seek(0)
+        plt.close(fig)
+
+        return img_buffer

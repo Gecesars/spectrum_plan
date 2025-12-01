@@ -1,0 +1,425 @@
+
+--- Table 0 ---
+Campo em dBµV/m | Canal 141 a 197 e 201 a 300
+Campo em dBµV/m | 66
+
+--- Table 1 ---
+Campo em dBµV/m | Canal 198 a 200(1)
+Campo em dBµV/m | 91
+
+--- Table 2 ---
+CLASSES | REQUISITOS MÁXIMOS | REQUISITOS MÁXIMOS | REQUISITOS MÁXIMOS | REQUISITOS MÁXIMOS
+CLASSES | POTÊNCIA (ERP) | POTÊNCIA (ERP) | DISTÂNCIA MÁXIMA AO CONTORNO PROTEGIDO (66dBµV/m) (km) | ALTURA DE REFERÊNCIA SOBRE O NÍVEL MÉDIO DO TERRENO (m)
+CLASSES | kW | dBk | DISTÂNCIA MÁXIMA AO CONTORNO PROTEGIDO (66dBµV/m) (km) | ALTURA DE REFERÊNCIA SOBRE O NÍVEL MÉDIO DO TERRENO (m)
+E1 | 100 | 20,0 | 78,5 | 600
+E2 | 75 | 18,8 | 67,5 | 450
+E3 | 60 | 17,8 | 54,5 | 300
+A1 | 50 | 17,0 | 38,5 | 150
+A2 | 30 | 14,8 | 35,0 | 150
+A3 | 15 | 11,8 | 30,0 | 150
+A4 | 5 | 7,0 | 24,0 | 150
+B1 | 3 | 4,8 | 16,5 | 90
+B2 | 1 | 0 | 12,5 | 90
+C | 0,3 | -5,2 | 7,5 | 60
+
+--- Table 3 ---
+REQUISITOS MÁXIMOS | REQUISITOS MÁXIMOS | REQUISITOS MÁXIMOS
+POTÊNCIA (ERP) (W) | RAIO MÁXIMO À ÁREA DE PRESTAÇÃO DE SERVIÇO (91 dBµV/m) (km) | ALTURA DE REFERÊNCIA SOBRE A COTA DA BASE DA TORRE (m)
+25 | 1,0 | 30
+
+--- Table 4 ---
+ | f (kHz ) | RELAÇÕES DE PROTEÇÃO | RELAÇÕES DE PROTEÇÃO
+ |  | LINEAR | dB
+COCANAL | 0 | 31,63:1 | 30
+CANAIS ADJACENTES | ± 200 | 2,00:1 | 6
+
+--- Table 5 ---
+Classe | Cocanal | 1° Adj
+E1 | 94 | 38
+E2 | 81 | 31
+E3 | 67 | 24
+A1 | 49 | 17
+A2 | 44,5 | 14
+A3 | 39 | 11,5
+A4 | 31,5 | 8,5
+B1 | 22,5 | 5
+B2 | 17,5 | 3,5
+C | 12 | 2,5
+
+--- Table 6 ---
+Canal Interferente | Canal Desejado | Relação de Proteção (dB)
+141 a 170 | 5 | 28
+171 a 200 | 6 | 28
+
+--- Table 7 ---
+Canal Desejado | Canal Interferente | Relação de Proteção (dB)
+141 a 143 | 5 | 0
+144 a 150 | 5 | 24
+151 a 162 | 5 | 0
+163 a 167 | 5 | 4
+168 a 170 | 5 | 19
+171 a 173 | 6 | 0
+174 a 180 | 6 | 24
+181 a 192 | 6 | 0
+193 a 197 | 6 | 4
+
+--- Table 8 ---
+Canal Desejado | Relação de Proteção (dB)
+170/171/201 | 6
+
+--- Table 9 ---
+Canal Interferente | Relação de Proteção (dB) | Canal Interferente | Relação de Proteção (dB)
+201/171 | -1,0 | 208/178 | -20,5
+202/172 | -3,8 | 209/179 | -20,5
+203/173 | -6,5 | 210/180 | -20,5
+204/174 | -9,5 | 211/181 | -20,5
+205/175 | -12,0 | 212/182 | -22,0
+206/176 | -16,5 | 213/183 | -22,5
+207/177 | -20,5 | 214/184 | -25,0
+
+--- Table 10 ---
+Grupo | A3 | A2 | A1 | A0 | B0 | Sinalizado no grupo 1A | Descrição
+0A | 0 | 0 | 0 | 0 | 0 |  | Informações para sintonia básica e comutação de frequência (ver item 6.1.5.1)
+0B | 0 | 0 | 0 | 0 | 1 |  | Informações para sintonia básica e comutação de frequência (ver item 6.1.5.1)
+1A | 0 | 0 | 0 | 1 | 0 |  | Número de Identificação  do Programa Transmitido e Identificador de Aplicação (ver item 6.1.5.2)
+1B | 0 | 0 | 0 | 1 | 1 |  | Número de Identificação do Programa Transmitido  (ver item 6.1.5.2)
+2A | 0 | 0 | 1 | 0 | 0 |  | Radiotexto - RT (ver item 6.1.5.3)
+2B | 0 | 0 | 1 | 0 | 1 |  | Radiotexto - RT (ver item 6.1.5.3)
+3A | 0 | 0 | 1 | 1 | 0 |  | Identificação de aplicações abertas de dados - AID (ver item 6.1.5.4)
+3B | 0 | 0 | 1 | 1 | 1 |  | Aplicações abertas de dados - ODA (ver item 6.1.5.5)
+4A | 00 | 11 | 00 | 00 | 00 |  | Data e Hora - CT  (ver item 6.1.5.6)
+4B | 0 | 1 | 0 | 0 | 1 |  | Aplicações abertas de dados - ODA
+5A | 0 | 1 | 0 | 1 | 0 |  | Canais transparentes de dados (32 canais) - TDC ou ODA (ver item 6.1.5.8)
+5B | 0 | 1 | 0 | 1 | 1 |  | Canais transparentes de dados (32 canais) - TDC ou ODA (ver item 6.1.5.8)
+6A | 0 | 1 | 1 | 0 | 0 |  | Aplicações internas - IH ou ODA (ver item 6.1.5.9)
+6B | 0 | 1 | 1 | 0 | 1 |  | Aplicações internas - IH ou ODA (ver item 6.1.5.9)
+7A | 0 | 1 | 1 | 1 | 0 | Sim | Reservado para futuras aplicações
+7B | 0 | 1 | 1 | 1 | 1 |  | ODA
+8A | 1 | 0 | 0 | 0 | 0 | Sim | Canal de mensagens de trânsito - TMC ou ODA (ver item 6.1.5.12)
+8B | 1 | 0 | 0 | 0 | 1 |  | ODA
+9A | 1 | 0 | 0 | 1 | 0 | Sim | Sistema de Alerta de Emergência - EWS ou ODA (ver item 6.1.5.13)
+9B | 1 | 0 | 0 | 1 | 1 |  | ODA
+10A | 1 | 0 | 1 | 0 | 0 |  | Nome do Tipo de Programação - PTYN
+10B | 1 | 0 | 1 | 0 | 1 |  | ODA
+11A | 1 | 0 | 1 | 1 | 0 |  | ODA
+11B | 1 | 0 | 1 | 1 | 1 |  | ODA
+12A | 1 | 1 | 0 | 0 | 0 |  | ODA
+12B | 1 | 1 | 0 | 0 | 1 |  | ODA
+13A | 1 | 1 | 0 | 1 | 0 | Sim | Reservado para Futuras Aplicações
+13B | 1 | 1 | 0 | 1 | 1 |  | ODA
+14A | 1 | 1 | 1 | 0 | 0 |  | Utilização de funções de outras emissoras - EON (ver item 6.1.5.17)
+14B | 1 | 1 | 0 | 0 | 1 |  | Utilização de funções de outras emissoras - EON (ver item 6.1.5.17)
+15A | 1 | 1 | 1 | 1 | 0 |  | Não especificado
+15B | 1 | 1 | 1 | 1 | 1 |  | Informações para sintonia básica e comutação rápida (ver item 6.1.5.19)
+
+--- Table 11 ---
+Funções Principais | Tipos de grupos que contêm estas informações | Taxa de repetição por segundo
+Identificador da Emissora (PI) | Todos | 11,4      (1)
+Tipo de Programação (PTY) | Todos | 11,4      (1)
+Indicador de Informações de Trânsito (TP) | Todos | 11,4      (1)
+Nome da Emissora (PS) | 0A, 0B | 1           (2)
+Frequências Alternativas (AF) | 0A | 4
+Aviso de Boletim de Trânsito (TA) | 0A, 0B, 14B, 15B | 4
+Identificador de Decodificação (DI) | 0A, 0B, 15B | 1
+Comutador Música / Locução (MS) | 0A, 0B, 15B | 4
+Radiotexto (RT) | 2A, 2B | 0,2    (3)
+Utilização de Funções de outras Emissoras (EON) | 14A | Até  2       (4)
+
+--- Table 12 ---
+Tipos de grupos | Funções | Proporção típica para transmissão desses tipos de grupos
+0A ou 0B 1A ou 1B 2A ou 2B 14A ou 14B Outros | PI, PS, TP, PTY, AF (1), TA, DI, MS PI, PTY, TP, PIN PI, PTY, TP, RT PI, PTY, TP, EON OUTRAS APLICAÇÕES | 40% 10% 15% (2) 10% 25%
+
+--- Table 13 ---
+Grupo | Código do Tipo de grupo | Disponibilidade para ODA
+ | 00000 | Aplicação especial. Não transportado por grupo algum.
+3B | 00111 | Disponível incondicionalmente
+4B | 01001 | Disponível incondicionalmente
+5A | 01010 | Disponível quando não usado para TDC
+5B | 01011 | Disponível quando não usado para TDC
+6A | 01100 | Disponível quando não usado para IH
+6B | 01101 | Disponível quando não usado para IH
+7B | 01111 | Disponível incondicionalmente
+8A | 10000 | Disponível quando não usado para TMC
+8B | 10001 | Disponível incondicionalmente
+9A | 10010 | Disponível quando não usado para EWS
+9B | 10011 | Disponível incondicionalmente
+10B | 10101 | Disponível incondicionalmente
+11A | 10110 | Disponível incondicionalmente
+11B | 10111 | Disponível incondicionalmente
+12A | 11000 | Disponível incondicionalmente
+12B | 11001 | Disponível incondicionalmente
+13B | 11011 | Disponível incondicionalmente
+ | 11111 | Significado especial: Falta temporária de dados (estado do codificador).
+
+--- Table 14 ---
+Código TP | Código TA | Aplicações
+0 | 0 | Indica que a emissora não transmite informações de trânsito nem se refere, via EON, a outra que o faça.
+0 | 1 | Indica que a emissora aponta, via EON, para outra(s) emissora(s) que transmite(m) informações de trânsito.
+1 | 0 | Indica que a emissora transmite informações de trânsito, mas não no momento. Indica também que a emissora pode apontar, via EON, para outra(s) emissora(s) que transmite(m) informações de trânsito.
+1 | 1 | Indica que a emissora está transmitindo boletim de trânsito no momento.
+
+--- Table 15 ---
+Programação | Modo de operação
+Bit d0 em 0 | Mono
+Bit d0 em 1 | Estéreo
+Bit d1 em 0 | Não usado
+Bit d1 em 1 | Não usado
+Bit d2 em 0 | Não comprimido
+Bit d2 em 1 | Comprimido
+Bit d3 em 0 | PTY Estático
+Bit d3 em 1 | Indica que o código de PTY da emissora sintonizada, ou da emissora referenciada na variante 13 do EON, é comutado dinamicamente.
+
+--- Table 16 ---
+Número | Código binário | Frequência da portadora | Canalização
+0 | 0000 0000 | 87,5 MHz | Canal 198
+1 | 0000 0001 | 87,6 MHz | Não usado
+2 | 0000 0010 | 87,7 MHz | Canal 199
+3 | 0000 0011 | 87,8 MHz | Não usado
+4 | 0000 0100 | 87,9 MHz | Canal 200
+5 | 0000 0101 | 88,0 MHz | Não usado
+6 | 0000 0110 | 88,1 MHz | Canal 201
+7 | 0000 0111 | 88,2 MHz | Não usado
+8 | 0000 1000 | 88,3 MHz | Canal 202
+: | : | : | :
+90 | 0101 1010 | 96,5 MHz | Canal 243
+91 | 0101 1011 | 76,1 MHz | Canal 141
+92 | 0101 1100 | 96,7 MHz | Canal 244
+93 | 0101 1101 | 76,3 MHz | Canal 142
+94 | 0101 1110 | 96,9 MHz | Canal 245
+95 | 0101 1111 | 76,5 MHz | Canal 143
+: | : | : | :
+199 | 1100 0111 | 86,9 MHz | Canal 195
+200 | 1100 1000 | 107,5 MHz | Canal 298
+201 | 1100 1001 | 87,1 MHz | Canal 196
+202 | 1100 1010 | 107,7 MHz | Canal 299
+203 | 1100 1011 | 87,3 MHz | Canal 197
+204 | 1100 1100 | 107,9 MHz | Canal 300
+
+--- Table 17 ---
+Número | Código Binário | Significado especial
+0 | 0000 0000 | Não usado
+205 | 1100 1101 | Código de preenchimento
+206 | 1100 1110 | Não atribuído
+: | : | :
+223 | 1101 1111 | Não atribuído
+224 | 1110 0000 | Não existe AF
+225 | 1110 0001 | Segue 1 AF
+: | : | :
+249 | 1111 1001 | Seguem 25 AF
+250 | 1111 1010 | Segue uma frequência OM
+251 | 1111 1011 | Não atribuído
+: | : | :
+255 | 1111 1111 | Não atribuído
+
+--- Table 18 ---
+Número | Código binário | Frequência da Portadora
+OM 16 : : : : 122 123 . . . 132 | 0001 0000 : : : : 0111 1010 0111 1011 . . . 10000100 | 540 kHz : : : : 1600 kHz 1610 kHz . . . 1700 kHz
+
+--- Table 19 ---
+Grupo 0A | 1º byte | 2º byte
+1º | #5 | AF1
+2º | AF2 | AF3
+3º | AF4 | AF5
+
+--- Table 20 ---
+Grupo 0A | 1º byte | 2º byte
+1º | #4 | AF1
+2º | AF2 | AF3
+3º | AF4 | Preenchimento
+
+--- Table 21 ---
+Grupo 0A | 1º byte | 2º byte
+1º | #4 | AF1
+2º | AF2 | AF3
+3º | Segue uma frequência OM | AF4
+
+--- Table 22 ---
+Grupo 0A | F1 | F2 | Comentários: Número total de frequências transmitidas: 11 Frequência da emissora sintonizada: 89,3 MHz Número de frequências alternativas: 5
+1º | #11 | 89,3 | Comentários: Número total de frequências transmitidas: 11 Frequência da emissora sintonizada: 89,3 MHz Número de frequências alternativas: 5
+2º | 89,3 | 101,7 | Comentários: Número total de frequências transmitidas: 11 Frequência da emissora sintonizada: 89,3 MHz Número de frequências alternativas: 5
+3º | 88,9 | 89,3 | Comentários: Número total de frequências transmitidas: 11 Frequência da emissora sintonizada: 89,3 MHz Número de frequências alternativas: 5
+4º | 89,3 | 102,5 | Comentários: Número total de frequências transmitidas: 11 Frequência da emissora sintonizada: 89,3 MHz Número de frequências alternativas: 5
+5º | 99,5 | 89,3 | Comentários: Número total de frequências transmitidas: 11 Frequência da emissora sintonizada: 89,3 MHz Número de frequências alternativas: 5
+6º | 89,3 | 89,1 | Comentários: Número total de frequências transmitidas: 11 Frequência da emissora sintonizada: 89,3 MHz Número de frequências alternativas: 5
+
+--- Table 23 ---
+Grupo 0A | F1 | F2 | Comentário: Número total de frequências transmitidas: 9 Frequência da emissora sintonizada: 99,5 MHz Número de frequências alternativas: 4
+1º | #9 | 99,5 | Comentário: Número total de frequências transmitidas: 9 Frequência da emissora sintonizada: 99,5 MHz Número de frequências alternativas: 4
+2º | 89,3 | 99,5 | Comentário: Número total de frequências transmitidas: 9 Frequência da emissora sintonizada: 99,5 MHz Número de frequências alternativas: 4
+3º | 100,9 | 99,5 | Comentário: Número total de frequências transmitidas: 9 Frequência da emissora sintonizada: 99,5 MHz Número de frequências alternativas: 4
+4º | 99,5 | 104,7 | Comentário: Número total de frequências transmitidas: 9 Frequência da emissora sintonizada: 99,5 MHz Número de frequências alternativas: 4
+5º | 99,5 | 89,1 | Comentário: Número total de frequências transmitidas: 9 Frequência da emissora sintonizada: 99,5 MHz Número de frequências alternativas: 4
+
+--- Table 24 ---
+Identificação das Palavras agregadas | d9 | d8 | d7 | d6 | d5 | d4 | d3 | d2 | d1 | d0
+A | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0
+B | 0 | 1 | 1 | 0 | 0 | 1 | 1 | 0 | 0 | 0
+C | 0 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0 | 0
+C’ | 1 | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0
+D | 0 | 1 | 1 | 0 | 1 | 1 | 0 | 1 | 0 | 0
+E | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0
+
+--- Table 25 ---
+b15 |  |  | b12 | b11 |  |  | b8 | b7 |  |  | b4 | b3 |  |  | b0
+ |  |  |  |  |  |  |  |  |  |  |  |  |  |  | 
+
+--- Table 26 ---
+Código da área de cobertura | L | I | N | S | R1 | R2 | R3 | R4 | R5 | R6 | R7 | R8 | R9 | R10 | R11 | R12
+HEX | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | A | B | C | D | E | F
+
+--- Table 27 ---
+I: (Internacional) | O conjunto de emissoras tem transmissões em vários países
+N: (Nacional) | O conjunto de emissoras cobre todo o país
+S: (Supra Regional) | O conjunto de emissoras cobre mais de um Estado
+R1…R12: (Regional) | O conjunto de emissoras cobre um Estado
+L: (Local) | Emissora local
+
+--- Table 28 ---
+Dec | Hex | Char | Dec | Hex | Char | Dec | Hex | Char | Dec | Hex | Char | Dec | Hex | Char
+0 | 0 | NUL | 32 | 20 |  | 64 | 40 | @ | 96 | 60 | ` | 128 | 80 | á
+1 | 1 | SOH | 33 | 21 | ! | 65 | 41 | A | 97 | 61 | a | 129 | 81 | à
+2 | 2 | STX | 34 | 22 | " | 66 | 42 | B | 98 | 62 | b | 130 | 82 | é
+3 | 3 | ETX | 35 | 23 | # | 67 | 43 | C | 99 | 63 | c | 132 | 84 | í
+4 | 4 | EOT | 36 | 24 | ¤ | 68 | 44 | D | 100 | 64 | d | 134 | 86 | ó
+5 | 5 | ENQ | 37 | 25 | % | 69 | 45 | E | 101 | 65 | e | 136 | 88 | ú
+6 | 6 | ACK | 38 | 26 | & | 70 | 46 | F | 102 | 66 | f | 139 | 8B | Ç
+7 | 7 | BEL | 39 | 27 | ' | 71 | 47 | G | 103 | 67 | g | 144 | 90 | â
+8 | 8 | BS | 40 | 28 | ( | 72 | 48 | H | 104 | 68 | h | 146 | 92 | ê
+9 | 9 | TAB | 41 | 29 | ) | 73 | 49 | I | 105 | 69 | i | 150 | 96 | ô
+10 | A | LF | 42 | 2A | * | 74 | 4A | J | 106 | 6A | j | 153 | 99 | ü
+11 | B | VT | 43 | 2B | + | 75 | 4B | K | 107 | 6B | k | 155 | 9B | ç
+12 | C | FF | 44 | 2C | , | 76 | 4C | L | 108 | 6C | l | 171 | AB | $
+13 | D | CR | 45 | 2D | - | 77 | 4D | M | 109 | 6D | m | 192 | C0 | Á
+14 | E | SO | 46 | 2E | . | 78 | 4E | N | 110 | 6E | n | 193 | C1 | À
+15 | F | SI | 47 | 2F | / | 79 | 4F | O | 111 | 6F | o | 194 | C2 | É
+16 | 10 | DLE | 48 | 30 | 0 | 80 | 50 | P | 112 | 70 | p | 196 | C4 | Í
+17 | 11 | DC1 | 49 | 31 | 1 | 81 | 51 | Q | 113 | 71 | q | 198 | C6 | Ó
+18 | 12 | DC2 | 50 | 32 | 2 | 82 | 52 | R | 114 | 72 | r | 200 | C8 | Ú
+19 | 13 | DC3 | 51 | 33 | 3 | 83 | 53 | S | 115 | 73 | s | 208 | D0 | Â
+20 | 14 | DC4 | 52 | 34 | 4 | 84 | 54 | T | 116 | 74 | t | 210 | D2 | Ê
+21 | 15 | NAK | 53 | 35 | 5 | 85 | 55 | U | 117 | 75 | u | 214 | D6 | Ô
+22 | 16 | SYN | 54 | 36 | 6 | 86 | 56 | V | 118 | 76 | v | 217 | D9 | Ü
+23 | 17 | ETB | 55 | 37 | 7 | 87 | 57 | W | 119 | 77 | w | 224 | E0 | Ã
+24 | 18 | CAN | 56 | 38 | 8 | 88 | 58 | X | 120 | 78 | x | 230 | E6 | Õ
+25 | 19 | EM | 57 | 39 | 9 | 89 | 59 | Y | 121 | 79 | y 2 | 240 | F0 | ã
+26 | 1A | SUB | 58 | 3A | : | 90 | 5A | Z | 122 | 7A | z | 246 | F6 | õ
+27 | 1B | ESC | 59 | 3B | ; | 91 | 5B | [ | 123 | 7B | { |  |  | 
+28 | 1C | FS | 60 | 3C | < | 92 | 5C | \ | 124 | 7C | | |  |  | 
+29 | 1D | GS | 61 | 3D | = | 93 | 5D | ] | 125 | 7D | } |  |  | 
+30 | 1E | RS | 62 | 3E | > | 94 | 5E | ^ | 126 | 7E | ~ |  |  | 
+31 | 1F | US | 63 | 3F | ? | 95 | 5F | _ | 127 | 7F | DEL |  |  | 
+
+--- Table 29 ---
+Número | Código | Tipo de Programação | Visor com 08 Caracteres | Visor com 16 Caracteres
+00 | 00000 | Programação Indefinida | Não_def | Não_definido
+01 | 00001 | Notícias | Noticias | Noticias
+02 | 00010 | Atualidades | Atual | Atualidade
+03 | 00011 | Informação | Info | Informação
+04 | 00100 | Esportes | Esportes | Esportes
+05 | 00101 | Educação | Educação | Educação
+06 | 00110 | Novela | Novela | Novela
+07 | 00111 | Cultura/Cultural | Cultura | Cultura
+08 | 01000 | Ciência | Ciência | Ciência
+09 | 01001 | Variedades | Diversos | Variedades
+10 | 01010 | Música Popular | Pop | Música_Popular
+11 | 01011 | Rock | Rock | Rock
+12 | 01100 | Canção | Canção | Canção
+13 | 01101 | Música Clássica Suave | ClássicaS | Clássica Suave
+14 | 01110 | Música Clássica | Clássica | Música Clássica
+15 | 01111 | Outras Músicas | Outras_M | Outras_Músicas
+16 | 10000 | Meteorologia | Meteo | Meteorologia
+17 | 10001 | Economia | Economia | Economia
+18 | 10010 | Programação Infantil | Infantil | Prog_Infantil
+19 | 10011 | Acontecimento Social | A_social | Acont_Social
+20 | 10100 | Religião | Religião | Religião
+21 | 10101 | Telefonemas dos Ouvintes | Via_fone | Via_Telefone
+22 | 10110 | Viagem | Viagem | Viagem
+23 | 10111 | Lazer | Lazer | Lazer
+24 | 11000 | Jazz | Jazz | Jazz
+25 | 11001 | Música Country | Country | Country
+26 | 11010 | Música Nacional | MPB | MPB
+27 | 11011 | Música Antiga | Antiga | Música Antiga
+28 | 11100 | Música Folclórica | M_folc | M_Folclórica
+29 | 11101 | Documentário | Document | Documentário
+30 | 11110 | Teste de Alarme | Teste | Teste de Alarme
+31 | 11111 | Alarme | Alarme_! | Alarme_Alarme_!
+
+--- Table 30 ---
+Notícias | Qualquer tipo de programa noticioso ou reportagem
+Atualidades | Programas tópicos com informações de curiosidades e/ou atualidades, incluindo análise ou debate, geralmente em diferentes estilos de apresentação, podendo haver participação de ouvintes
+Informação | Qualquer tipo de programa de interesse geral
+Esportes | Programas relacionados a quaisquer aspectos esportivos
+Educação | Programas relacionados a quaisquer aspectos educacionais
+Novelas (Séries) | Programas que envolvam novelas e seriados
+Cultural | Programação voltada aos aspectos da cultura regional, nacional ou internacional, incluindo idiomas, teatro, etc
+Ciência | Programação voltada às ciências naturais e tecnologias
+Variedades | Programas de formatos variados com a participação de um comunicador (entrevistas, jogos, perguntas e respostas, etc)
+Música Pop | Música com forte apelo popular e rápida comercialização; rapidez no aparecimento e desaparecimento
+Rock | Música do gênero Rock
+Canção | Música contemporânea e de fácil aceitação e, geralmente, de curta duração
+Música Clássica Suave | Músicas clássicas para apreciadores de músicas instrumentais, vocais e corais
+Música Clássica | Músicas clássicas orquestradas, óperas e sinfonias
+Outras Músicas | Estilo de música que não se ajusta a outras categorias
+Meteorologia | Boletins de previsão do tempo
+Economia | Análise mercadológica, bolsa de valores e cotações diversas
+Programação Infantil | Qualquer tipo de programação, especialmente dirigida ao público infantil, inclusive programas educacionais e culturais
+Acontecimentos Sociais | Programas acerca de pessoas e assuntos diversos
+Religião | Programas de qualquer tipo de religião ou crença
+Telefonemas dos Ouvintes | Programas que envolvam a participação de ouvintes
+Viagem | Programação destinada a descrição de locais aprazíveis próximos ou distantes; também pacotes turísticos ou sugestões de viagens
+Lazer | Programação destinada a atividades recreativas
+Jazz | Programação com música jazz
+Música Country | Programação com música country e sertaneja
+Música Nacional | Programação com música popular brasileira (MPB)
+Música Antiga | Programação da chamada “idade de ouro” da música popular
+Música Folclórica | Programação com música folclórica
+Documentário | Programação do estilo reportagem investigativa
+Teste de Alarme | Programação para teste em equipamento de radiodifusão ou receptores
+Alarme | Programação para aviso emergencial, feito em circunstâncias excepcionais, para dar informações sobre eventos que causem perigo de qualquer natureza. Não é usado para procura, somente para interrupção automática
+
+--- Table 31 ---
+MJD | CALENDÁRIO JULIANO MODIFICADO
+UTC | HORA UNIVERSAL COORDENADA
+Y | ANO A PARTIR DE 1900 (ex. para 2003, Y=103)
+M | MESES DE JANEIRO (=1) ATÉ DEZEMBRO (=12)
+D | DIA DO MÊS - DE 1 A 31
+WY | “Nº DA SEMANA”. ANO A PARTIR DE 1900
+WN | Nº DA SEMANA DE ACORDO COM A NORMA ISO 2015
+WD | DIA DA SEMANA DE SEGUNDA (=1) A DOMINGO (=7)
+K, L, M’, W, Y’ | VARIÁVEIS INTERMEDIÁRIAS
+x | MULTIPLICAÇÃO
+int | PARTE INTEIRA
+MOD 7 | RESTO (0-6) depois da divisão do inteiro por 7
+
+--- Table 32 ---
+Sigla | Significado em Português | Significado original em Inglês
+AF | Frequências alternativas | Alternative Frequencies list
+AID | Identificador da aplicação ODA | Applications IDentification for ODA
+CI | Identificador do País | Country Identifier
+CT | Data e hora | Clock Time and date
+DI | Identificador de decodificação | Decoder Identification
+EG | Indicador de extensão genérica | Extended Generic indicator
+EON | Utilização de funções de outras emissoras | Enhanced Other Networks information
+EWS | Sistema de alerta de emergência | Emergency Warning System
+IH | Aplicações Internas | In House application
+ILS | Indicador de conexão internacional | International Linkage Set indicator
+LA | Acionador de conexão | Linkage Actuator
+LI | Identificador de conexão | Linkage Identifier
+LSN | Número da conexão | Linkage Set Number
+MJD | Calendário Juliano Modificado | Modified Julian Day
+MS | Comutador Música/voz | Music Speech switch
+ODA | Aplicações abertas de dados | Open Data Applications
+OM | Onda Média | Medium Wave
+ON | Outras Redes | Other Networks
+PI | Identificador da emissora | Programme Identification
+PIN | Número de identificação do programa transmitido | Programme Item Number
+PS | Nome da emissora | Programme Service name
+PTY | Tipo de programação | Programme Type
+PTY N | Nome do tipo de programação | Programme Type Name
+RDS | Sistema de Radiotransmissão de dados | Radio Data System
+RT | Radiotexto | RadioText
+TA | Aviso de boletim de trânsito | Traffic Announcement flag
+TDC | Canais transparentes de dados | Transparent Data Channels
+TMC | Canal de mensagens de trânsito | Traffic Message Channel
+TP | Indicador de informações de trânsito | Traffic Programme flag
+UTC | Hora Universal Coordenada | Coordinated Universal Time

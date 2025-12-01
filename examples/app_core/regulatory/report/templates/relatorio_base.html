@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body { font-family: 'Helvetica', Arial, sans-serif; margin: 25px; color: #0d1c3f; }
+        h1, h2, h3 { color: #0d47a1; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        th, td { border: 1px solid #cfd8dc; padding: 6px 8px; font-size: 13px; }
+        th { background: #e3f2fd; text-transform: uppercase; letter-spacing: .05em; }
+        .section { margin-bottom: 32px; }
+        .page-break { page-break-after: always; }
+        .metrics { display: flex; gap: 12px; flex-wrap: wrap; }
+        .metric { border: 1px solid #bbdefb; border-radius: 8px; padding: 8px 12px; min-width: 120px; }
+        .muted { color: #607d8b; font-size: 12px; }
+    </style>
+</head>
+<body>
+    {% include 'relatorio_p1_identificacao.html' %}
+    <div class="page-break"></div>
+    {% include 'relatorio_p2_tecnico.html' %}
+    <div class="page-break"></div>
+    {% include 'relatorio_p3_pilares.html' %}
+    {% if sarc_links %}
+        <div class="page-break"></div>
+        {% include 'relatorio_p4_sarc.html' %}
+    {% endif %}
+    <div class="page-break"></div>
+    {% include 'relatorio_p5_anatel.html' %}
+</body>
+</html>

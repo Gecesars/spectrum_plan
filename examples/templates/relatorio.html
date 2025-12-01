@@ -1,0 +1,149 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Relatório · {{ project.name }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/relatorio.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="report-editor container-xl py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <span class="text-uppercase text-muted small d-block">Projeto</span>
+            <h1 class="h3 mb-0">{{ project.name }}</h1>
+            <small class="text-muted">Slug: {{ project.slug }}</small>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="btn btn-outline-secondary" href="{{ url_for('ui.home') }}">Voltar</a>
+            <button class="btn btn-outline-danger" id="validateBtn" {% if not has_snapshot %}disabled{% endif %}>
+                Verificar inconsistências
+            </button>
+            <button class="btn btn-brand" id="generatePdfBtn" {% if not has_snapshot %}disabled{% endif %}>
+                Gerar PDF
+            </button>
+        </div>
+    </div>
+
+    {% if not has_snapshot %}
+        <div class="alert alert-warning">
+            Gere uma mancha de cobertura antes de montar o relatório.
+        </div>
+    {% endif %}
+
+    <div id="reportStatusBanner" class="alert alert-danger d-none"></div>
+
+    {% if has_snapshot %}
+    <div id="reportLoading" class="loading-overlay">
+        <div class="spinner-border text-primary me-2" role="status"></div>
+        <span class="text-muted">Preparando dados do relatório...</span>
+    </div>
+
+    <div id="reportEditorApp" class="d-none" data-project="{{ project.slug }}" data-context-url="{{ url_for('reporting_api.analysis_context') }}?project={{ project.slug }}">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="editor-card mb-4">
+                    <p class="section-title">Prévia da cobertura</p>
+                    <img id="coveragePreviewImg" class="preview-img mb-3" alt="Cobertura">
+                    <img id="colorbarPreviewImg" class="preview-img d-none" alt="Escala">
+                </div>
+                <div class="editor-card mb-4">
+                    <p class="section-title">Diagramas e perfil</p>
+                    <div class="row g-3 diagram-grid">
+                        <div class="col-md-6">
+                            <label class="text-muted small mb-1">Diagrama Horizontal</label>
+                            <img id="diagramHorizontalImg" alt="Diagrama Horizontal">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small mb-1">Diagrama Vertical</label>
+                            <img id="diagramVerticalImg" alt="Diagrama Vertical">
+                        </div>
+                        <div class="col-12">
+                            <label class="text-muted small mb-1">Perfil do enlace</label>
+                            <img id="profilePreviewImg" alt="Perfil do Enlace">
+                        </div>
+                    </div>
+                </div>
+                <div class="editor-card">
+                    <p class="section-title">Receptores avaliados</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Receptor</th>
+                                    <th>Município</th>
+                                    <th>Distância</th>
+                                    <th>Campo</th>
+                                    <th>População</th>
+                                </tr>
+                            </thead>
+                            <tbody id="receiverSummaryBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="editor-card mb-4">
+                    <p class="section-title">Configurações</p>
+                    <div class="mb-3">
+                        <label class="form-label">Cor do cabeçalho</label>
+                        <input type="color" class="form-control form-control-color" id="inputHeaderColor" value="#0d47a1" title="Cor do cabeçalho">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Logo da empresa</label>
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <img id="companyLogoPreview" class="company-logo-preview d-none" alt="Logo da empresa">
+                            <div class="flex-grow-1">
+                                <input type="file" class="form-control" id="companyLogoInput" accept="image/*">
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="companyLogoRemoveBtn">Remover</button>
+                                <small class="text-muted d-block mt-1">Aplicado no topo do relatório.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Notas do projeto</label>
+                        <textarea class="form-control" id="inputProjectNotes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="editor-card mb-4" id="reportForm">
+                    <p class="section-title">Seções do relatório</p>
+                    <label class="form-label">Resumo executivo</label>
+                    <textarea class="form-control mb-3" id="inputOverview" rows="3"></textarea>
+
+                    <label class="form-label">Cobertura</label>
+                    <textarea class="form-control mb-3" id="inputCoverage" rows="3"></textarea>
+
+                    <label class="form-label">Perfil do enlace</label>
+                    <textarea class="form-control mb-3" id="inputProfile" rows="3"></textarea>
+
+                    <label class="form-label">Direcionalidade Horizontal</label>
+                    <textarea class="form-control mb-3" id="inputPatternH" rows="3"></textarea>
+
+                    <label class="form-label">Direcionalidade Vertical</label>
+                    <textarea class="form-control mb-3" id="inputPatternV" rows="3"></textarea>
+
+                    <label class="form-label">Conclusão</label>
+                    <textarea class="form-control mb-3" id="inputConclusion" rows="3"></textarea>
+                </div>
+                <div class="editor-card">
+                    <p class="section-title">Recomendações</p>
+                    <div class="recommendations-list" id="recommendationsList"></div>
+                </div>
+                <div class="editor-card mt-4" id="validationPanel">
+                    <p class="section-title">Inconsistências do relatório</p>
+                    <div id="validationIssues" class="validation-issues text-muted small">Nenhuma verificação realizada.</div>
+                </div>
+                <div class="editor-card mt-4">
+                    <p class="section-title">Resumo dos receptores</p>
+                    <pre class="link-summary" id="linkSummaryBlock"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/pages/relatorio.js') }}"></script>
+{% endblock %}

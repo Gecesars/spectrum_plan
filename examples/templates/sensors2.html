@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensors</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .gauge-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+        }
+        .chart-container {
+            margin-bottom: 40px;
+        }
+        canvas {
+            width: 100%;
+            height: 400px;
+        }
+        .led-control {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .led-control button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sensor Data</h1>
+        <div class="gauge-container">
+            <div>
+                <canvas id="tempGauge" width="300" height="300"></canvas>
+                <h2>Temperature (°C)</h2>
+            </div>
+            <div>
+                <canvas id="humGauge" width="300" height="300"></canvas>
+                <h2>Humidity (%)</h2>
+            </div>
+            <div>
+                <canvas id="heatIndexGauge" width="300" height="300"></canvas>
+                <h2>Heat Index (°C)</h2>
+            </div>
+        </div>
+        <div class="chart-container">
+            <canvas id="temperatureChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="humidityChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="heatIndexChart"></canvas>
+        </div>
+        <div class="led-control">
+            <h2>LED Control</h2>
+            <button onclick="controlLED('red', 'on')">Red On</button>
+            <button onclick="controlLED('red', 'off')">Red Off</button>
+            <button onclick="controlLED('green', 'on')">Green On</button>
+            <button onclick="controlLED('green', 'off')">Green Off</button>
+            <button onclick="controlLED('blue', 'on')">Blue On</button>
+            <button onclick="controlLED('blue', 'off')">Blue Off</button>
+        </div>
+    </div>
+    <script>
+        const tempOpts = {
+            angle: 0,
+            lineWidth: 0.2,
+            radiusScale: 1,
+            pointer: {
+                length: 0.6,
+                strokeWidth: 0.035,
+                color: '#000000'
+            },
+            staticZones: [
+                { strokeStyle: "#F03E3E", min: 0, max: 50 }
+            ],
+            staticLabels: {
+                font: "10px sans-serif",
+                labels: [0, 10, 20, 30, 40, 50],
+                color: "#000000",
+                fractionDigits: 0
+            },
+            limitMax: false,
+            limitMin: false,
+            highDpiSupport: true,
+        };
+        const humOpts = { ...tempOpts, staticZones: [{ strokeStyle: "#1E90FF", min: 0, max: 100 }] };
+        const heatIndexOpts = { ...tempOpts, staticZones: [{ strokeStyle: "#FF8C00", min: 0, max: 50 }] };
+
+        const tempGauge = new Gauge(document.getElementById("tempGauge")).setOptions(tempOpts);
+        const humGauge = new Gauge(document.getElementById("humGauge")).setOptions(humOpts);
+        const heatIndexGauge = new Gauge(document.getElementById("heatIndexGauge")).setOptions(heatIndexOpts);
+
+        tempGauge.maxValue = 50; tempGauge.setMinValue(0); tempGauge.animationSpeed = 32;
+        humGauge.maxValue = 100; humGauge.setMinValue(0); humGauge.animationSpeed = 32;
+        heatIndexGauge.maxValue = 50; heatIndexGauge.setMinValue(0); heatIndexGauge.animationSpeed = 32;
+
+        // Initialize line charts
+        const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
+        const humidityChartCtx = document.getElementById('humidityChart').getContext('2d');
+        const heatIndexChartCtx = document.getElementById('heatIndexChart').getContext('2d');
+
+        const temperatureChart = new Chart(temperatureChartCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: [],
+                    fill: true,
+                    borderColor: 'rgba(255,99,132,1)',
+                    backgroundColor: 'rgba(255,99,132,0.2)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: { display: true },
+                    y: { display: true, min: -10, max: 50 }
+                }
+            }
+        });
+
+        const humidityChart = new Chart(humidityChartCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Humidity (%)',
+                    data: [],
+                    fill: true,
+                    borderColor: 'rgba(54,162,235,1)',
+                    backgroundColor: 'rgba(54,162,235,0.2)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: { display: true },
+                    y: { display: true, min: 0, max: 100 }
+                }
+            }
+        });
+
+        const heatIndexChart = new Chart(heatIndexChartCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Heat Index (°C)',
+                    data: [],
+                    fill: true,
+                    borderColor: 'rgba(255,206,86,1)',
+                    backgroundColor: 'rgba(255,206,86,0.2)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: { display: true },
+                    y: { display: true, min: -10, max: 50 }
+                }
+            }
+        });
+
+        async function fetchSensorData() {
+            const response = await fetch('http://192.168.50.137:5000/sensor_data');
+            const data = await response.json();
+            
+            const now = new Date().toLocaleTimeString();
+
+            tempGauge.set(data.temperature);
+            humGauge.set(data.humidity);
+            heatIndexGauge.set(data.heat_index);
+
+            addDataToChart(temperatureChart, now, data.temperature);
+            addDataToChart(humidityChart, now, data.humidity);
+            addDataToChart(heatIndexChart, now, data.heat_index);
+        }
+
+        async function controlLED(color, state) {
+            const response = await fetch('http://192.168.50.137:5000/control_led', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ color: color, state: state })
+            });
+            const result = await response.json();
+            if (result.status !== 'success') {
+                alert('Failed to control LED');
+            }
+        }
+
+        function addDataToChart(chart, label, data) {
+            if (chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets.forEach(dataset => dataset.data.shift());
+            }
+            chart.data.labels.push(label);
+            chart.data.datasets.forEach(dataset => dataset.data.push(data));
+            chart.update();
+        }
+
+        setInterval(fetchSensorData, 2000);
+    </script>
+</body>
+</html>

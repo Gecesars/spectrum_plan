@@ -1,0 +1,75 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}ATX Coverage{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/landing.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="landing-hero">
+    <div class="landing-hero__content">
+        <h2>Integração completa para planejamento e monitoramento de sistemas RF</h2>
+        <p>Centralize cálculos de cobertura, ajuste de antenas, telemetria de sensores e relatórios executivos em uma só plataforma. A ATX Coverage foi criada para equipes que precisam transformar dados de campo em decisões rápidas e precisas.</p>
+        <div class="landing-hero__actions">
+            <a class="btn btn-brand btn-lg" href="{{ url_for('ui.index') }}">Entrar na plataforma</a>
+            <a class="btn btn-outline-primary btn-lg" href="{{ url_for('ui.register') }}">Criar conta corporativa</a>
+        </div>
+    </div>
+    <div class="landing-highlight">
+        <img src="{{ url_for('static', filename='img7.png') }}" alt="Dashboard ATX Coverage">
+        <div class="text-center mt-3 text-muted small">Diagnósticos e visualizações em tempo real</div>
+    </div>
+</section>
+
+<section class="landing-carousel">
+    <div id="landingCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% set slides = [
+                'img1.png', 'img2.png', 'img3.png', 'img4.png', 'img5.png',
+                'img6.png', 'img8.png', 'img9.png', 'img10.png', 'img11.png'
+            ] %}
+            {% for image in slides %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <img src="{{ url_for('static', filename=image) }}" alt="Imagem demonstrativa {{ loop.index }}">
+                </div>
+            {% endfor %}
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#landingCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#landingCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Próximo</span>
+        </button>
+    </div>
+</section>
+
+<section class="landing-products">
+    <h3 class="page-heading text-center mb-4">Manuais técnicos e documentação</h3>
+    <div class="landing-products__grid">
+        <div class="landing-product-card">
+            <img src="{{ url_for('static', filename='Antena FM.png') }}" alt="Antena Circular">
+            <h5>Antena FM circular</h5>
+            <a href="{{ url_for('static', filename='Antena FM circular alta potência aluminio.pdf') }}" target="_blank" class="btn btn-link">Abrir catálogo</a>
+        </div>
+        <div class="landing-product-card">
+            <img src="{{ url_for('static', filename='Dipolo BL.png') }}" alt="Dipolo Banda Larga">
+            <h5>Antena dipolo banda larga</h5>
+            <a href="{{ url_for('static', filename='Antena FM dipolo banda larga.pdf') }}" target="_blank" class="btn btn-link">Abrir catálogo</a>
+        </div>
+        <div class="landing-product-card">
+            <img src="{{ url_for('static', filename='TXFM.png') }}" alt="Transmissor FM">
+            <h5>Transmissor FM de alta eficiência</h5>
+            <a href="{{ url_for('static', filename='Placa_Mae_TX_FM_Copy.pdf') }}" target="_blank" class="btn btn-link">Ver documento</a>
+        </div>
+    </div>
+</section>
+
+<section class="landing-footer-cta">
+    <p class="fw-semibold">Acesso rápido com perfil demo</p>
+    <p class="text-muted">Usuário: <code>NOVO</code> · Senha: <code>123456789</code></p>
+    <p>Precisa de suporte, dúvidas ou sugestões? Escreva para <a href="mailto:atxcover@gmail.com">atxcover@gmail.com</a>.</p>
+</section>
+{% endblock %}

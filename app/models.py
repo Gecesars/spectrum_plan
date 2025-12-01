@@ -57,6 +57,22 @@ class User(UserMixin, Base):
     def __repr__(self) -> str:  # pragma: no cover - representational
         return f"<User {self.email}>"
 
+
+class RegulatoryClass(Base):
+    __tablename__ = "regulatory_classes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    service_type: Mapped[str] = mapped_column(String(50), nullable=False) # 'FM', 'TV'
+    class_name: Mapped[str] = mapped_column(String(10), nullable=False) # 'E1', 'A1', etc.
+    max_erp_kw: Mapped[float] = mapped_column(Float, nullable=False)
+    max_erp_dbk: Mapped[float] = mapped_column(Float, nullable=False)
+    protected_contour_distance_km: Mapped[float] = mapped_column(Float, nullable=False)
+    reference_height_m: Mapped[float] = mapped_column(Float, nullable=False)
+    protected_contour_level_dbuv: Mapped[float] = mapped_column(Float, default=66.0, nullable=False)
+
+    def __repr__(self):
+        return f"<RegulatoryClass {self.service_type} {self.class_name}>"
+
     def set_password(self, raw_password: str) -> None:
         ok, msg = validate_password_strength(raw_password)
         if not ok:

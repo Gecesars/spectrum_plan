@@ -1,0 +1,64 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Visualização 3D · {{ project.name }}{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/rt3d_viewer.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/cesium@1.120.0/Build/Cesium/Cesium.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/cesium@1.120.0/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="rt3d-viewer-wrapper">
+    <aside class="rt3d-panel">
+        <h1 class="h4 mb-2">{{ project.name }}</h1>
+        <p class="text-muted mb-3">Cena urbana renderizada em CesiumJS. Explore em 3D, exporte o GeoJSON para Mapbox ou analise os raios do solver.</p>
+
+        <div class="rt3d-controls">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="toggleBuildingsCesium" checked>
+                <label class="form-check-label" for="toggleBuildingsCesium">Exibir edificações</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="toggleRaysCesium" checked>
+                <label class="form-check-label" for="toggleRaysCesium">Exibir raios</label>
+            </div>
+            <a class="btn btn-sm btn-outline-primary w-100" href="{{ scene_endpoint }}" target="_blank" rel="noopener">Exportar GeoJSON / Mapbox</a>
+        </div>
+
+        <div class="rt3d-legend">
+            <strong class="legend-title">Legenda de raios</strong>
+            <ul>
+                <li><span class="legend-chip legend-los"></span>LOS / Qualidade alta</li>
+                <li><span class="legend-chip legend-reflection"></span>Reflexão / Qualidade moderada</li>
+                <li><span class="legend-chip legend-obstruction"></span>Obstrução / Qualidade baixa</li>
+            </ul>
+        </div>
+
+        <dl class="rt3d-summary">
+            <div>
+                <dt>Projeto</dt>
+                <dd>{{ project.slug }}</dd>
+            </div>
+            <div>
+                <dt>Status</dt>
+                <dd id="rt3dStatusPanel">Carregando…</dd>
+            </div>
+        </dl>
+        <p class="small text-muted mb-3">Ajuste os parâmetros na página de cobertura e gere uma nova cena RT3D para atualizar esta visualização.</p>
+        <div class="rt3d-diagnostics" id="rt3dDiagnosticsPanel"></div>
+    </aside>
+    <div id="cesiumContainer" class="rt3d-viewer"></div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    window.RT3D_VIEWER_CONFIG = {
+        sceneUrl: "{{ scene_endpoint }}",
+        dataEndpoint: "{{ data_endpoint }}",
+        cesiumToken: {{ cesium_token|tojson }}
+    };
+</script>
+<script src="{{ url_for('static', filename='js/pages/rt3d_viewer.js') }}"></script>
+{% endblock %}

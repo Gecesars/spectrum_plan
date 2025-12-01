@@ -1,0 +1,579 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Painel · ATX Coverage{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/home.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="report-home container-xl py-4">
+    {% if not has_projects %}
+        <section class="home-card empty-state text-center">
+            <span class="eyebrow mb-2 d-inline-block text-uppercase">Primeiros passos</span>
+            <h2 class="mb-2">Nenhum projeto encontrado</h2>
+            <p class="text-muted mb-4">Crie um projeto para começar a armazenar parâmetros, executar engines de cobertura e gerar relatórios profissionais.</p>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <a class="btn btn-brand" href="{{ new_project_url }}">Criar projeto</a>
+                <a class="btn btn-outline-secondary" href="{{ projects_list_url }}">Ver todos os projetos</a>
+            </div>
+        </section>
+    {% else %}
+        <section class="home-card hero-card mb-4">
+            <div class="hero-header d-flex flex-column flex-lg-row gap-4">
+                <div class="flex-grow-1">
+                    <span class="eyebrow text-uppercase">Capa executiva</span>
+                    <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+                        <h1 class="hero-title mb-0">{{ selected_project.name }}</h1>
+                        <div class="hero-badges d-flex flex-wrap gap-2">
+                            {% if project_overview.engine %}
+                                <span class="badge-soft">{{ project_overview.engine|upper }}</span>
+                            {% endif %}
+                            <span class="badge-soft">{{ selected_project.slug }}</span>
+                            <span class="badge-soft">{{ selected_project.crs }}</span>
+                            {% if project_overview.radius_km is not none %}
+                                <span class="badge-soft">{{ project_overview.radius_km|round(1) }} km</span>
+                            {% endif %}
+                            {% if project_overview.has_aoi %}
+                                <span class="badge-soft text-success">AOI definido</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <p class="text-muted mb-0">{{ selected_project.description or 'Sem descrição cadastrada para este projeto.' }}</p>
+                </div>
+                <div class="hero-selector">
+                    <label for="projectSelector" class="form-label text-muted small mb-1">Projeto em análise</label>
+                    <select id="projectSelector" class="form-select" onchange="handleProjectChange(this.value)">
+                        {% for project in projects %}
+                            <option value="{{ project.slug }}" {% if selected_project and project.id == selected_project.id %}selected{% endif %}>{{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="hero-stats d-flex flex-wrap gap-4 mt-4">
+                <div>
+                    <span class="stat-label">Última geração</span>
+                    <strong>
+                        {% if project_overview.generated_at_dt %}
+                            {{ project_overview.generated_at_dt.strftime('%d/%m/%Y %H:%M') }}
+                        {% elif project_overview.generated_at_raw %}
+                            {{ project_overview.generated_at_raw }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </strong>
+                </div>
+                <div>
+                    <span class="stat-label">Localização da TX</span>
+                    <strong>{{ project_overview.location_name or '—' }}</strong>
+                    {% if project_overview.coordinates %}
+                        <small class="d-block text-muted">{{ project_overview.coordinates.lat }}, {{ project_overview.coordinates.lng }}</small>
+                    {% endif %}
+                </div>
+                <div>
+                    <span class="stat-label">Altitude do sítio</span>
+                    <strong>
+                        {% if project_overview.tx_site_elevation is not none %}
+                            {{ project_overview.tx_site_elevation|round(1) }} m
+                        {% else %}
+                            —
+                        {% endif %}
+                    </strong>
+                </div>
+                <div>
+                    <span class="stat-label">Ativos / Jobs / Relatórios</span>
+                    <strong>{{ project_overview.assets_count }} / {{ project_overview.jobs_count }} / {{ project_overview.reports_count }}</strong>
+                </div>
+            </div>
+            <div class="hero-actions d-flex flex-wrap gap-2 mt-4">
+                {% for action in project_actions %}
+                    <a class="btn {% if action.variant == 'brand' %}btn-brand{% else %}btn-outline-primary{% endif %}" href="{{ action.url }}">{{ action.label }}</a>
+                {% endfor %}
+                <a class="btn btn-outline-secondary" href="{{ projects_list_url }}">Projetos</a>
+                {% if selected_project %}
+                    <a class="btn btn-outline-secondary" href="{{ url_for('ui.report_editor', slug=selected_project.slug) }}">
+                        Gerar Relatório
+                    </a>
+                    <button class="btn btn-outline-success d-flex align-items-center" id="btnAnalysisReport" data-project="{{ selected_project.slug }}">
+                        <span class="spinner-border spinner-border-sm me-2 d-none" id="analysisReportSpinner" role="status" aria-hidden="true"></span>
+                        <span class="report-label">Relatório de Análise</span>
+                    </button>
+                    <button class="btn btn-outline-warning d-flex align-items-center" id="btnRegReport" data-project="{{ selected_project.slug }}">
+                        <span class="spinner-border spinner-border-sm me-2 d-none" id="regReportSpinner" role="status" aria-hidden="true"></span>
+                        <span class="report-label">Relatório ANATEL</span>
+                    </button>
+                    <a class="btn btn-outline-info" target="_blank" href="{{ url_for('regulator_api.anatel_basic_form', slug=selected_project.slug) }}">Checklist ANATEL (JSON)</a>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="home-card coverage-card h-100">
+                    {% set preview_url = coverage_artifacts.map_snapshot_url or coverage_artifacts.heatmap_url %}
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="mb-1">Última mancha gerada</h5>
+                            <p class="text-muted small mb-0">Pré-visualização do raster sobre o mapa operacional.</p>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% if preview_url %}
+                                <a class="btn btn-sm btn-outline-secondary" href="{{ preview_url }}" target="_blank" rel="noopener">Abrir imagem</a>
+                            {% endif %}
+                            {% if coverage_artifacts.map_snapshot_url and coverage_artifacts.heatmap_url and coverage_artifacts.map_snapshot_url != coverage_artifacts.heatmap_url %}
+                                <a class="btn btn-sm btn-outline-secondary" href="{{ coverage_artifacts.heatmap_url }}" target="_blank" rel="noopener">Heatmap bruto</a>
+                            {% endif %}
+                            {% if coverage_artifacts.kml_url %}
+                                <a class="btn btn-sm btn-outline-success" href="{{ coverage_artifacts.kml_url }}" target="_blank" rel="noopener">Exportar KML</a>
+                            {% endif %}
+                            {% if coverage_artifacts.rt3d_viewer_url %}
+                                <a class="btn btn-sm btn-outline-primary" href="{{ coverage_artifacts.rt3d_viewer_url }}">Visualizar em 3D</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if preview_url %}
+                        <div class="coverage-preview mb-3">
+                            <img src="{{ preview_url }}" alt="Prévia da cobertura" class="img-fluid rounded-3 w-100">
+                        </div>
+                    {% else %}
+                        <div class="empty-tile text-center p-5 text-muted border rounded-3">
+                            Nenhuma cobertura processada para este projeto ainda.
+                        </div>
+                    {% endif %}
+                    <div class="coverage-meta row text-center g-3">
+                        <div class="col-6 col-md-3">
+                            <span class="stat-label">Engine</span>
+                            <strong>{{ project_overview.engine|upper if project_overview.engine else '—' }}</strong>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="stat-label">Raio planejado</span>
+                            <strong>
+                        {% if project_overview.radius_km is not none %}
+                            {{ project_overview.radius_km|round(1) }} km
+                        {% else %}
+                            —
+                                {% endif %}
+                            </strong>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="stat-label">Altitude média</span>
+                            <strong>
+                                {% if project_overview.tx_site_elevation is not none %}
+                                    {{ project_overview.tx_site_elevation|round(1) }} m
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </strong>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <span class="stat-label">Artefatos</span>
+                            <strong>
+                                {% if coverage_artifacts.map_snapshot_url and coverage_artifacts.rt3d_viewer_url %}
+                                    Mapa composto + RT3D
+                                {% elif coverage_artifacts.map_snapshot_url %}
+                                    Mapa composto
+                                {% elif coverage_artifacts.heatmap_url %}
+                                    Heatmap bruto
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </div>
+                    {% if coverage_artifacts.colorbar_url %}
+                        <div class="colorbar mt-3">
+                            <span class="stat-label mb-1 d-block">Escala aplicada</span>
+                            <img src="{{ coverage_artifacts.colorbar_url }}" alt="Colorbar" class="img-fluid rounded-2">
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="home-card metrics-card h-100">
+                    <h6 class="mb-3 text-uppercase small text-muted">Resumo técnico</h6>
+                    {% for section in technical_sections %}
+                        <div class="metric-section {% if not loop.last %}mb-3{% endif %}">
+                            <p class="metric-title">{{ section.title }}</p>
+                            <ul class="list-unstyled mb-0">
+                                {% for item in section.rows %}
+                                    <li class="metric-row d-flex justify-content-between">
+                                        <span>{{ item.label }}</span>
+                                        <span class="{% if item.is_empty %}text-muted{% else %}fw-semibold{% endif %}">{{ item.value }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <section class="row g-4 mb-4">
+            <div class="col-lg-4">
+                <div class="home-card metrics-card h-100">
+                    <h6 class="text-uppercase small text-muted mb-3">Cobertura no centro</h6>
+                    <ul class="list-unstyled mb-4">
+                        {% for item in coverage_metrics_panel %}
+                            <li class="metric-row d-flex justify-content-between">
+                                <span>{{ item.label }}</span>
+                                <span class="{% if item.is_empty %}text-muted{% else %}fw-semibold{% endif %}">{{ item.value }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <h6 class="text-uppercase small text-muted mb-3">Componentes de perda</h6>
+                    <ul class="list-unstyled">
+                        {% for item in coverage_loss_panel %}
+                            <li class="metric-row d-flex justify-content-between">
+                                <span>{{ item.label }}</span>
+                                <span class="{% if item.is_empty %}text-muted{% else %}fw-semibold{% endif %}">{{ item.value }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="home-card metrics-card h-100">
+                    <h6 class="text-uppercase small text-muted mb-3">Ganho efetivo</h6>
+                    <ul class="list-unstyled mb-0">
+                        {% for item in gain_panel %}
+                            <li class="metric-row d-flex justify-content-between">
+                                <span>{{ item.label }}</span>
+                                <span class="{% if item.is_empty %}text-muted{% else %}fw-semibold{% endif %}">{{ item.value }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="home-card metrics-card h-100">
+                    <h6 class="text-uppercase small text-muted mb-3">Diagnósticos RT3D</h6>
+                    {% if rt3d_panel %}
+                        <ul class="list-unstyled mb-0">
+                            {% for item in rt3d_panel %}
+                                <li class="metric-row d-flex justify-content-between">
+                                    <span>{{ item.label }}</span>
+                                    <span class="{% if item.is_empty %}text-muted{% else %}fw-semibold{% endif %}">{{ item.value }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted small mb-0">Execute o motor RT3D para destravar métricas urbanas com reflexões e difrações.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="row g-4 mb-4">
+            <div class="col-xl-8">
+                <div class="home-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="mb-1">Artefatos visuais</h5>
+                            <p class="text-muted small mb-0">Inclua estes elementos na sua apresentação ou anexe ao PDF final.</p>
+                        </div>
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('ui.download_report') }}">Baixar relatório</a>
+                    </div>
+                    <div class="artifact-grid">
+                        {% set artifact_preview_url = coverage_artifacts.map_snapshot_url or coverage_artifacts.heatmap_url %}
+                        {% if artifact_preview_url %}
+                            <figure class="artifact-tile">
+                                <img src="{{ artifact_preview_url }}" alt="Cobertura" class="img-fluid">
+                                <figcaption>{{ 'Mapa composto' if coverage_artifacts.map_snapshot_url else 'Heatmap bruto' }}</figcaption>
+                            </figure>
+                        {% endif %}
+                        {% if coverage_artifacts.map_snapshot_url and coverage_artifacts.heatmap_url %}
+                            <figure class="artifact-tile">
+                                <img src="{{ coverage_artifacts.heatmap_url }}" alt="Heatmap" class="img-fluid">
+                                <figcaption>Heatmap bruto</figcaption>
+                            </figure>
+                        {% endif %}
+                        {% if coverage_artifacts.colorbar_url %}
+                            <figure class="artifact-tile">
+                                <img src="{{ coverage_artifacts.colorbar_url }}" alt="Colorbar" class="img-fluid">
+                                <figcaption>Escala aplicada</figcaption>
+                            </figure>
+                        {% endif %}
+                        {% if image_gallery.profile %}
+                            <figure class="artifact-tile">
+                                <img src="data:image/png;base64,{{ image_gallery.profile }}" alt="Perfil de enlace" class="img-fluid">
+                                <figcaption>Perfil de enlace</figcaption>
+                            </figure>
+                        {% endif %}
+                        {% if image_gallery.diagram_h %}
+                            <figure class="artifact-tile">
+                                <img src="data:image/png;base64,{{ image_gallery.diagram_h }}" alt="Diagrama horizontal" class="img-fluid">
+                                <figcaption>Diagrama H</figcaption>
+                            </figure>
+                        {% endif %}
+                        {% if image_gallery.diagram_v %}
+                            <figure class="artifact-tile">
+                                <img src="data:image/png;base64,{{ image_gallery.diagram_v }}" alt="Diagrama vertical" class="img-fluid">
+                                <figcaption>Diagrama V</figcaption>
+                            </figure>
+                        {% endif %}
+                        {% if image_gallery.legacy_coverage %}
+                            <figure class="artifact-tile">
+                                <img src="data:image/png;base64,{{ image_gallery.legacy_coverage }}" alt="Cobertura histórica" class="img-fluid">
+                                <figcaption>Registro legado</figcaption>
+                            </figure>
+                        {% endif %}
+                        {% if not (coverage_artifacts.map_snapshot_url or coverage_artifacts.heatmap_url or coverage_artifacts.colorbar_url or image_gallery.profile or image_gallery.diagram_h or image_gallery.diagram_v or image_gallery.legacy_coverage) %}
+                            <div class="empty-tile text-center p-5 text-muted border rounded-3">
+                                Artefatos visuais serão exibidos aqui após a primeira execução.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4">
+                <div class="home-card">
+                    <h5 class="mb-3">Relatórios recentes</h5>
+                    {% if reports_preview %}
+                        <ul class="list-unstyled mb-0">
+                            {% for report in reports_preview %}
+                                <li class="report-item">
+                                    <div>
+                                        <strong>{{ report.title }}</strong>
+                                        <small class="d-block text-muted">
+                                            {{ report.created_at.strftime('%d/%m/%Y %H:%M') if report.created_at else 'Sem data' }} · {{ report.template_name }}
+                                        </small>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted small mb-0">Nenhum relatório foi emitido para este projeto.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="row g-4 mb-4">
+            <div class="col-xl-6">
+                <div class="home-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h5 class="mb-0">Receptores monitorados</h5>
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('ui.mapa', project=selected_project.slug) }}">Gerenciar no mapa</a>
+                    </div>
+                    {% if receivers_summary %}
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Receptor</th>
+                                        <th>Município</th>
+                                        <th>Campo</th>
+                                        <th>Potência</th>
+                                        <th>Distância</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rx in receivers_summary %}
+                                        <tr>
+                                            <td>{{ rx.label }}</td>
+                                            <td>{{ rx.municipality or '—' }}</td>
+                                            <td>{{ rx.field|round(1) if rx.field is not none else '—' }} dBµV/m</td>
+                                            <td>{{ rx.power|round(1) if rx.power is not none else '—' }} dBm</td>
+                                            <td>{{ rx.distance|round(2) if rx.distance is not none else '—' }} km</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted small mb-0">Nenhum receptor sincronizado para este projeto ainda.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="home-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <h5 class="mb-0">Fontes de dados</h5>
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('projects.view_project', slug=selected_project.slug) }}">Detalhes do projeto</a>
+                    </div>
+                    {% if dataset_sources %}
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Período</th>
+                                        <th>Notas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for ds in dataset_sources %}
+                                        <tr>
+                                            <td>{{ ds.kind.value if ds.kind else '—' }}</td>
+                                            <td>{{ ds.time_range or '—' }}</td>
+                                            <td>{{ ds.notes or '—' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted small mb-0">Nenhuma fonte registrada. Utilize o planner para registrar DEM, LULC e edificações.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="row g-4 mb-4">
+            <div class="col-xl-6">
+                <div class="home-card">
+                    <h5 class="mb-3">Parâmetros usados na última execução</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <span class="stat-label text-uppercase small">Payload enviado ao engine</span>
+                            <ul class="list-unstyled mb-0 mt-2">
+                                {% if request_highlights %}
+                                    {% for item in request_highlights %}
+                                        <li class="metric-row d-flex justify-content-between">
+                                            <span>{{ item.label }}</span>
+                                            <span class="{% if item.is_empty %}text-muted{% else %}fw-semibold{% endif %}">{{ item.value }}</span>
+                                        </li>
+                                    {% endfor %}
+                                {% else %}
+                                    <li class="text-muted small">Ainda não há registros de execução.</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="stat-label text-uppercase small">Preferências do projeto</span>
+                            <ul class="list-unstyled mb-0 mt-2">
+                                {% for item in preference_highlights %}
+                                    <li class="metric-row d-flex justify-content-between">
+                                        <span>{{ item.label }}</span>
+                                        <span class="{% if item.is_empty %}text-muted{% else %}fw-semibold{% endif %}">{{ item.value }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="home-card notes-card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                        <h5 class="mb-0">Notas operacionais</h5>
+                        <button class="btn btn-sm btn-brand" onclick="salvarNota()">Salvar nota</button>
+                    </div>
+                    <textarea id="notesArea" class="form-control" rows="6" placeholder="Anote observações relevantes sobre tilt, azimute, feedback de campo etc.">{{ notes_value }}</textarea>
+                    <small class="text-muted d-block mt-2">As notas ficam associadas ao seu usuário e aparecem em todos os relatórios.</small>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function showToast(message, variant = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${variant} border-0`;
+    toast.role = 'alert';
+    toast.innerHTML = `<div class="d-flex">
+        <div class="toast-body">${message}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>`;
+    document.body.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast, { delay: 2800 });
+    bsToast.show();
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+
+function salvarNota() {
+    const notas = document.getElementById('notesArea').value;
+    fetch('{{ url_for('ui.update_notes') }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'notes=' + encodeURIComponent(notas)
+    })
+    .then(response => response.json())
+    .then(data => {
+        showToast(data.message || 'Notas salvas com sucesso.');
+    })
+    .catch(() => alert('Erro ao salvar as notas. Tente novamente.'));
+}
+
+function handleProjectChange(slug) {
+    const url = new URL(window.location.href);
+    if (slug) {
+        url.searchParams.set('project', slug);
+    } else {
+        url.searchParams.delete('project');
+    }
+    window.location.href = url.toString();
+}
+
+async function generateRegReport(button) {
+    const slug = button?.dataset?.project;
+    if (!slug) return;
+    const spinner = document.getElementById('regReportSpinner');
+    button.disabled = true;
+    if (spinner) spinner.classList.remove('d-none');
+    try {
+        const payloadResp = await fetch(`/projects/${slug}/regulator/payload`, { credentials: 'same-origin' });
+        if (!payloadResp.ok) throw new Error('Falha ao montar payload.');
+        const payload = await payloadResp.json();
+        const reportResp = await fetch('/api/regulator/reports', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload),
+        });
+        const data = await reportResp.json();
+        if (!reportResp.ok) {
+            throw new Error(data.error || 'Erro ao gerar relatório.');
+        }
+        const link = data?.links?.pdf ? `<a href=\"${data.links.pdf}\" class=\"text-white text-decoration-underline ms-2\">Baixar PDF</a>` : '';
+        showToast(`Relatório ANATEL gerado com sucesso.${link}`, 'success');
+    } catch (error) {
+        showToast(error.message || 'Falha ao gerar relatório.', 'danger');
+    } finally {
+        if (spinner) spinner.classList.add('d-none');
+        button.disabled = false;
+    }
+}
+
+async function generateAnalysisReport(button) {
+    const slug = button?.dataset?.project;
+    if (!slug) return;
+    const spinner = document.getElementById('analysisReportSpinner');
+    button.disabled = true;
+    if (spinner) spinner.classList.remove('d-none');
+    try {
+        const response = await fetch('/api/reports/analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ project: slug }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.error || 'Erro ao gerar relatório de análise.');
+        }
+        const link = data.download_url ? `<a href=\"${data.download_url}\" class=\"text-white text-decoration-underline ms-2\" target=\"_blank\">Abrir PDF</a>` : '';
+        showToast(`Relatório de análise pronto.${link}`, 'success');
+    } catch (error) {
+        showToast(error.message || 'Falha ao gerar relatório de análise.', 'danger');
+    } finally {
+        if (spinner) spinner.classList.add('d-none');
+        button.disabled = false;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const regBtn = document.getElementById('btnRegReport');
+    if (regBtn) {
+        regBtn.addEventListener('click', () => generateRegReport(regBtn));
+    }
+    const analysisBtn = document.getElementById('btnAnalysisReport');
+    if (analysisBtn) {
+        analysisBtn.addEventListener('click', () => generateAnalysisReport(analysisBtn));
+    }
+});
+</script>
+{% endblock %}

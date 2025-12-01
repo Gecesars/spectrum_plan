@@ -1,0 +1,59 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Registrar · ATX Coverage{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-wrapper">
+    <div class="auth-card">
+        <h2 class="auth-title">Criar nova conta</h2>
+        <p class="text-center text-muted mb-4">Cadastre-se para acessar os recursos profissionais de projeto e análise de cobertura. Você receberá um e-mail para confirmar a conta.</p>
+        {% if error %}
+            <div class="alert alert-warning">{{ error }}</div>
+        {% endif %}
+        <form action="{{ url_for('ui.register') }}" method="post" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="username" class="form-label">Usuário</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+                <div class="invalid-feedback">Informe um usuário válido.</div>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">E-mail profissional</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+                <div class="invalid-feedback">Informe um e-mail válido.</div>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Senha</label>
+                <input type="password" class="form-control" id="password" name="password" minlength="8" required>
+                <div class="invalid-feedback">A senha deve possuir pelo menos 8 caracteres.</div>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-brand">Criar conta</button>
+            </div>
+        </form>
+        <div class="auth-footer">
+            <span>Já possui conta? <a href="{{ url_for('ui.login') }}">Acesse sua conta</a></span>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(() => {
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Diagramas de Antena</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f4f4;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #menu {
+    position: fixed;
+    width: 240px; /* Aumentado para acomodar melhor os campos de entrada */
+    height: 100%;
+    background-color: #004085;
+    color: white;
+    padding: 20px;
+    box-sizing: border-box; /* Inclui o padding e border no cálculo da largura */
+    display: flex;
+    flex-direction: column;
+}
+
+#menu a, #menu button {
+    color: white;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer; /* Estilo do cursor para indicar que é clicável */
+}
+
+#menu a:hover, #menu button:hover {
+    background-color: #0056b3;
+}
+
+#menu input[type='number'] {
+    width: 100%; /* Garante que os campos de entrada ocupem toda a largura do menu */
+    padding: 8px;
+    margin-bottom: 10px; /* Espaço entre os campos */
+    border: 1px solid #ccc; /* Adiciona uma borda para melhor visualização dos campos */
+    border-radius: 5px; /* Bordas arredondadas para os campos de entrada */
+    box-sizing: border-box; /* Inclui padding e border no cálculo da largura */
+}
+
+#menu label {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+        #content {
+            margin-left: 220px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between; /* Adjusted to space-between */
+        }
+        .chart-container {
+            flex: 1; /* Adjusted to make flex containers grow */
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            text-align: center;
+            margin: 10px;
+        }
+        img {
+            max-width: 100%;
+            height: auto; /* Ensure aspect ratio is maintained */
+        }
+
+        .back-button {
+            position: fixed;  /* Posicionamento fixo */
+            bottom: 20px;     /* 20 pixels do fundo da página */
+            right: 20px;      /* 20 pixels da direita da página */
+            background-color: #007bff; /* Cor de fundo azul */
+            color: white;     /* Texto na cor branca */
+            padding: 10px 20px; /* Padding para tornar o botão maior */
+            border: none;     /* Sem borda */
+            border-radius: 5px; /* Bordas arredondadas */
+            cursor: pointer;  /* Cursor de mão ao passar o mouse */
+        }
+        .back-button:hover {
+            background-color: #0056b3; /* Cor mais escura ao passar o mouse */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="menu">
+        <a href="#" onclick="document.getElementById('fileInput').click()">Carregar Arquivo</a>
+        <input type="file" id="fileInput" accept=".pat">
+        <span id="fileName" style="color: white; margin-left: 10px;"></span>
+        <input type="number" id="directionInput" min="0" max="359" placeholder="Digite a direção (0-359)">
+        <button onclick="sendDirectionAndFile()">Aplicar Direção</button>
+        
+        <input type="number" id="tiltInput" min="0" max="30" placeholder="Tilt Elétrico (0-30)">
+        <button onclick="applyTilt()">Aplicar Tilt</button>
+        
+        
+        <a href="#" onclick="salvarDiagrama()">Salvar Diagramas</a>
+        <button onclick="window.location.href='/calcular-cobertura'">Calcular Cobertura</button>
+
+    </div>
+    
+
+<div id="content">
+    <div class="chart-container" id="horizontalChart">Diagrama Horizontal</div>
+    <div class="chart-container" id="elevationChart">Diagrama de Elevação</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+     window.onload = function() {
+    fetch('/carregar_imgs')
+    .then(response => response.json())
+    .then(data => {
+        if (data.fileContent) {
+            const firstLine = data.fileContent.split('\n')[0];
+            document.getElementById('fileName').textContent = firstLine;
+           // Armazenando o conteúdo do arquivo na variável global para uso posterior
+            fileContentGlobal = data.fileContent;
+
+        }
+          
+        if (data.horizontal_image_base64 && data.vertical_image_base64) {
+            const horizontalImg = new Image();
+            horizontalImg.src = 'data:image/png;base64,' + data.horizontal_image_base64;
+            document.getElementById('horizontalChart').innerHTML = '';
+            document.getElementById('horizontalChart').appendChild(horizontalImg);
+
+            const verticalImg = new Image();
+            verticalImg.src = 'data:image/png;base64,' + data.vertical_image_base64;
+            document.getElementById('elevationChart').innerHTML = '';
+            document.getElementById('elevationChart').appendChild(verticalImg);
+        } else {
+            console.error('No image data received');
+            document.getElementById('horizontalChart').innerHTML = '<p>No horizontal data received.</p>';
+            document.getElementById('elevationChart').innerHTML = '<p>No vertical data received.</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao carregar imagens:', error);
+    });
+};
+
+
+function salvarDiagrama() {
+    const direction = document.getElementById('directionInput').value;
+    const tilt = document.getElementById('tiltInput').value;
+    const file = fileInput.files[0];
+    const formData = new FormData();
+
+
+
+    // Se um arquivo foi carregado, usa esse arquivo
+    if (file) {
+        formData.append('file', file, file.name);
+        formData.append('tilt', tilt);
+        formData.append('direction', direction);
+    }
+    fetch('/salvar_diagrama', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('Erro ao salvar o diagrama: ' + data.error);
+        } else {
+            alert('Diagrama salvo com sucesso!');
+        }
+    })
+    .catch(error => {
+        console.error('Falha na comunicação com o servidor:', error);
+        alert('Erro ao conectar ao servidor.');
+    });
+}
+
+
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const direction = document.getElementById('directionInput').value;
+        const tilt = document.getElementById('tiltInput').value;
+        if (file) {
+            document.getElementById('fileName').textContent = file.name;
+            const formData = new FormData();
+            formData.append('file', file, file.name);
+            formData.append('tilt', tilt);
+
+            formData.append('direction', direction);
+            
+            fetch('/upload_diagrama', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.horizontal_image_base64 && data.vertical_image_base64) {
+                    const horizontalImg = new Image();
+                    horizontalImg.src = 'data:image/png;base64,' + data.horizontal_image_base64;
+                    document.getElementById('horizontalChart').innerHTML = '';
+                    document.getElementById('horizontalChart').appendChild(horizontalImg);
+                    
+                    const verticalImg = new Image();
+                    verticalImg.src = 'data:image/png;base64,' + data.vertical_image_base64;
+                    document.getElementById('elevationChart').innerHTML = '';
+                    document.getElementById('elevationChart').appendChild(verticalImg);
+                } else {
+                    console.error('No image data received');
+                    document.getElementById('horizontalChart').innerHTML = '<p>No horizontal data received.</p>';
+                    document.getElementById('elevationChart').innerHTML = '<p>No vertical data received.</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao enviar arquivo:', error);
+            });
+        }
+    });
+    function updateImages(data) {
+        if (data.horizontal_image_base64 && data.vertical_image_base64) {
+            const horizontalImg = new Image();
+            horizontalImg.src = 'data:image/png;base64,' + data.horizontal_image_base64;
+            document.getElementById('horizontalChart').innerHTML = '';
+            document.getElementById('horizontalChart').appendChild(horizontalImg);
+
+            const verticalImg = new Image();
+            verticalImg.src = 'data:image/png;base64,' + data.vertical_image_base64;
+            document.getElementById('elevationChart').innerHTML = '';
+            document.getElementById('elevationChart').appendChild(verticalImg);
+        } else {
+            console.error('No image data received');
+            document.getElementById('horizontalChart').innerHTML = '<p>No horizontal data received.</p>';
+            document.getElementById('elevationChart').innerHTML = '<p>No vertical data received.</p>';
+        }
+    }
+
+    function sendDirectionAndFile() {
+    const file = document.getElementById('fileInput').files[0];
+    const direction = document.getElementById('directionInput').value;
+    const tilt = document.getElementById('tiltInput').value;
+
+    // Verifica se o arquivo foi carregado ou se existe conteúdo de arquivo disponível globalmente
+    if (!file) {
+        alert('Por favor, carregue um arquivo primeiro.');
+        return;
+    }
+
+    const formData = new FormData();
+
+    // Se um arquivo foi carregado, usa esse arquivo
+    if (file) {
+        formData.append('file', file);
+    } 
+    formData.append('tilt', tilt);
+    formData.append('direction', direction);
+
+    fetch('/upload_diagrama', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.horizontal_image_base64 && data.vertical_image_base64) {
+            updateImages(data);
+        } else {
+            console.error('No image data received');
+            document.getElementById('horizontalChart').innerHTML = '<p>No horizontal data received.</p>';
+            document.getElementById('elevationChart').innerHTML = '<p>No vertical data received.</p>';
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao enviar arquivo:', error);
+    });
+}
+
+
+function applyTilt() {
+    const file = document.getElementById('fileInput').files[0];
+    const tilt = document.getElementById('tiltInput').value;
+
+    const direction = document.getElementById('directionInput').value;
+
+    if (!file) {
+        alert('Por favor, carregue um arquivo primeiro.');
+        return;
+    }
+
+    if (tilt === '' || tilt < 0 || tilt > 30) {
+        alert('Por favor, insira um tilt válido (0-30).');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('tilt', tilt);
+
+    formData.append('direction', direction);
+
+    fetch('/upload_diagrama', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => updateImages(data))
+    .catch(error => {
+        console.error('Erro ao enviar arquivo:', error);
+    });
+}
+
+
+
+
+
+</script>
+<button class="back-button" onclick="window.location.href='/calcular-cobertura'">Voltar</button>
+</body>
+</html>

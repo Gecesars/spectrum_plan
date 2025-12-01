@@ -1,0 +1,111 @@
+.antenna-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+.antenna-sidebar {
+    background: #012a4a;
+    color: #fff;
+    border-radius: 18px;
+    padding: 1.75rem 1.5rem;
+    box-shadow: 0 22px 40px -30px rgba(1, 42, 74, 0.55);
+    position: sticky;
+    top: 120px;
+}
+
+.antenna-sidebar h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.antenna-sidebar .form-label {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+}
+
+.antenna-sidebar .form-control {
+    border-radius: 10px;
+    border: none;
+    margin-bottom: 1rem;
+}
+
+.antenna-sidebar .btn {
+    width: 100%;
+    margin-bottom: 0.75rem;
+}
+
+.antenna-sidebar .btn:last-child {
+    margin-bottom: 0;
+}
+
+.antenna-preview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.25rem;
+}
+
+.antenna-card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 1.5rem;
+    box-shadow: 0 26px 46px -34px rgba(15, 23, 42, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 340px;
+}
+
+.antenna-card h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--brand-secondary);
+    margin: 0;
+}
+
+.antenna-card .placeholder {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    color: var(--text-secondary);
+    background: #f5f7fa;
+    border: 1px dashed var(--border-soft);
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+.antenna-card img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 18px 36px -28px rgba(15, 23, 42, 0.35);
+}
+
+.antenna-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.antenna-actions .btn {
+    min-width: 160px;
+}
+
+.file-name {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.75);
+    min-height: 1.25rem;
+}
+
+@media (max-width: 992px) {
+    .antenna-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .antenna-sidebar {
+        position: static;
+    }
+}

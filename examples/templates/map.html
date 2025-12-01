@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Map View</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #map { height: 60vh; }
+        #elevationChart { width: 100%; height: 40vh; }
+        .leaflet-popup-content-wrapper {
+            background: #f0f0f0;
+        }
+        .leaflet-popup-tip-container {
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <canvas id="elevationChart"></canvas>
+
+    <script>
+        var map = L.map('map').setView([-23.550520, -46.633308], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        let markers = [];
+
+        map.on('click', function(e) {
+            if (markers.length < 2) {
+                var markerLabel = markers.length === 0 ? "TX" : "RX";
+                var newMarker = L.marker(e.latlng).addTo(map).bindPopup(`<b>${markerLabel}</b>`).openPopup();
+                markers.push([e.latlng.lat, e.latlng.lng]);
+
+                if (markers.length === 2) {
+                    fetchElevationData(markers);
+                }
+            }
+        });
+
+        function fetchElevationData(path) {
+            fetch('/fetch-elevation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.results) {
+                    renderElevationChart(data.results);
+                } else {
+                    console.error('Failed to fetch elevation data');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function renderElevationChart(elevationResults) {
+            var ctx = document.getElementById('elevationChart').getContext('2d');
+            var chartData = {
+                labels: elevationResults.map((_, i) => i),
+                datasets: [{
+                    label: 'Elevation (m)',
+                    data: elevationResults.map(r => r.elevation),
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            };
+            new Chart(ctx, {
+                type: 'line',
+                data: chartData,
+            });
+        }
+    </script>
+</body>
+</html>

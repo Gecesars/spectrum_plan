@@ -1,0 +1,23 @@
+<section class="section">
+    <h2>Página 3 — Conformidades</h2>
+    <table>
+        <tr>
+            <th>Pilar</th>
+            <th>Status</th>
+            <th>Mensagens</th>
+        </tr>
+        {% for validation in validations %}
+        <tr>
+            <td>{{ validation.pillar|upper }}</td>
+            <td>{{ validation.status }}</td>
+            <td>
+                <ul>
+                    {% for msg in validation.messages %}
+                        <li>{{ msg }}</li>
+                    {% endfor %}
+                </ul>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</section>

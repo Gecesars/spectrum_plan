@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Diagramas de Antena · ATX Coverage{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/antenna.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="coverage-container">
+    <header class="coverage-header">
+        <div>
+            <h1>Visualizador de Diagramas de Antena</h1>
+            <p>Faça o upload do arquivo <code>.pat</code>, ajuste direção e tilt elétrico e acompanhe o impacto instantaneamente.</p>
+        </div>
+    </header>
+
+    <div class="antenna-layout">
+        <aside class="antenna-sidebar">
+            <h2>Configurações</h2>
+            <button type="button" class="btn btn-light text-start" id="uploadTriggerBtn">Carregar arquivo PAT</button>
+            <input type="file" id="fileInput" accept=".pat" hidden>
+            <div class="file-name" id="fileName"></div>
+
+            <label for="directionInput" class="form-label mt-3">Direção da antena (0-359°)</label>
+            <input type="number" id="directionInput" class="form-control" min="0" max="359" placeholder="Ângulo azimutal">
+
+            <label for="tiltInput" class="form-label">Tilt elétrico (0-30°)</label>
+            <input type="number" id="tiltInput" class="form-control" min="0" max="30" placeholder="Inclinação">
+
+            <div class="antenna-actions mt-3">
+                <button type="button" class="btn btn-brand" id="applySettingsBtn">Aplicar ajustes</button>
+                <button type="button" class="btn btn-outline-light" id="saveDiagramBtn">Salvar diagrama</button>
+                <button type="button" class="btn btn-outline-light" id="goCoverageBtn">Calcular cobertura</button>
+            </div>
+        </aside>
+
+        <div class="antenna-preview">
+            <article class="antenna-card">
+                <h3>Diagrama horizontal</h3>
+                <div id="horizontalChart" class="placeholder">Carregue um arquivo para visualizar a distribuição horizontal.</div>
+            </article>
+            <article class="antenna-card">
+                <h3>Diagrama vertical</h3>
+                <div id="verticalChart" class="placeholder">Os ajustes aplicados são refletidos nesta projeção vertical.</div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<button id="backToDashboardBtn" class="btn btn-outline-primary fixed-back-button">Voltar ao painel</button>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{{ url_for('static', filename='js/pages/antenna.js') }}"></script>
+{% endblock %}

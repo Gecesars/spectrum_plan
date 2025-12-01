@@ -1,0 +1,348 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Mapa de Cobertura · ATX Coverage{% endblock %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/map.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="map-wrapper">
+    <aside class="map-panel" id="controlPanel">
+        <header class="panel-header">
+            <h2 class="panel-title">Planejamento Georreferenciado</h2>
+            <p class="panel-subtitle">Ajuste parâmetros, visualize o enlace e acompanhe o perfil profissional.</p>
+        </header>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Resumo consolidado da estação transmissora ativa.">
+            <h3 class="card-title">Estação Transmissora</h3>
+            <dl class="card-grid" id="txSummary">
+                <div>
+                    <dt>Latitude</dt>
+                    <dd id="txLat">-</dd>
+                </div>
+                <div>
+                    <dt>Longitude</dt>
+                    <dd id="txLng">-</dd>
+                </div>
+                <div>
+                    <dt>Frequência</dt>
+                    <dd id="txFreq">-</dd>
+                </div>
+                <div>
+                    <dt>Modelo</dt>
+                    <dd id="txModel">-</dd>
+                </div>
+                <div>
+                    <dt>Azimute</dt>
+                    <dd id="txDirection">-</dd>
+                </div>
+                <div>
+                    <dt>Município</dt>
+                    <dd id="txMunicipio">-</dd>
+                </div>
+                <div>
+                    <dt>Altitude TX</dt>
+                    <dd id="txElevation">-</dd>
+                </div>
+            </dl>
+            <p class="assist-text" id="txClimateInfo">Clima não ajustado para esta localização</p>
+        </div>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Defina a malha da cobertura, faixa de campo e unidade de visualização.">
+            <h3 class="card-title">Cobertura</h3>
+            <label class="form-label" for="radiusInput" data-bs-toggle="tooltip" title="Distância radial máxima a partir da TX considerada na predição.">Raio de análise (km)</label>
+            <div class="input-group">
+                <input type="range" id="radiusInput" min="5" max="150" step="5" value="30">
+                <span class="input-value" id="radiusValue">30 km</span>
+            </div>
+
+            <div class="dual-input">
+                <div>
+                    <label class="form-label" for="minField" data-bs-toggle="tooltip" title="Valor mínimo da escala de cores exibida na mancha.">Min dBµV/m</label>
+                    <input type="number" id="minField" placeholder="auto" step="0.1">
+                </div>
+                <div>
+                    <label class="form-label" for="maxField" data-bs-toggle="tooltip" title="Valor máximo da escala de cores exibida na mancha.">Max dBµV/m</label>
+                    <input type="number" id="maxField" placeholder="auto" step="0.1">
+                </div>
+            </div>
+
+            <div class="unit-toggle-group" role="group" aria-label="Unidade da escala">
+                <button type="button" class="btn btn-sm btn-outline-primary active" id="unitDbuv" aria-pressed="true" data-disabled-during-coverage data-bs-toggle="tooltip" title="Visualizar a malha em campo elétrico (dBµV/m).">Campo dBµV/m</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="unitDbm" aria-pressed="false" data-disabled-during-coverage data-bs-toggle="tooltip" title="Visualizar a malha em potência recebida (dBm).">Potência dBm</button>
+            </div>
+
+            <button class="btn btn-brand w-100" id="btnGenerateCoverage" data-bs-toggle="tooltip" title="Executar o motor de propagação com os parâmetros atuais.">Gerar cobertura</button>
+            {% if project %}
+                <a class="btn btn-outline-secondary w-100 mt-2" href="{{ url_for('ui.download_coverage_kml', slug=project.slug) }}" target="_blank" rel="noopener">
+                    Exportar KML
+                </a>
+            {% endif %}
+            <div class="coverage-status-badge" id="coverageStatus" hidden></div>
+        </div>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Ajuste de transparência e guias visuais do mapa.">
+            <h3 class="card-title">Visualização</h3>
+            <p class="assist-text">Arraste o marcador vermelho para reposicionar a TX. A região circular acompanha o raio selecionado.</p>
+            <div class="slider-row">
+                <label class="form-label" for="overlayOpacity" data-bs-toggle="tooltip" title="Controla a opacidade da imagem de cobertura sobre o mapa.">Transparência</label>
+                <input type="range" id="overlayOpacity" min="0.1" max="1" step="0.05">
+                <span id="overlayOpacityValue">0.85</span>
+            </div>
+        </div>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Defina tilt elétrico e azimute de irradiação da antena.">
+            <h3 class="card-title">Ajustes de Antena</h3>
+            <label class="form-label" for="tiltControl" data-bs-toggle="tooltip" title="Inclinação elétrica aplicada ao feixe principal.">Tilt elétrico TX (°)</label>
+            <div class="input-group">
+                <input type="range" id="tiltControl" min="-10" max="30" step="0.5" value="0">
+                <span class="input-value" id="tiltValue">0°</span>
+            </div>
+            <label class="form-label" for="directionControl" data-bs-toggle="tooltip" title="Direção principal (em graus) do lóbulo principal.">Azimute da antena (°)</label>
+            <div class="input-group">
+                <input type="range" id="directionControl" min="0" max="359" step="1" value="0">
+                <span class="input-value" id="directionValue">0°</span>
+            </div>
+            <p class="assist-text">O ganho vertical é recalculado em E/Emax (θ = 0°) e o diagrama horizontal é alinhado ao azimute informado.</p>
+        </div>
+
+        <div class="panel-card" id="rt3dPanel" hidden data-bs-toggle="tooltip" title="Painel dedicado ao motor Ray Tracing 3D.">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div>
+                    <h3 class="card-title mb-1">Cenário urbano RT3D</h3>
+                    <p class="assist-text mb-0">Malha de edificações usada no motor Ray Tracing 3D.</p>
+                </div>
+                <span class="badge bg-secondary-subtle text-uppercase fw-semibold">Somente RT3D</span>
+            </div>
+            <dl class="card-grid rt3d-grid">
+                <div>
+                    <dt>Fonte</dt>
+                    <dd id="rt3dSource">-</dd>
+                </div>
+                <div>
+                    <dt>Edificações</dt>
+                    <dd id="rt3dCount">-</dd>
+                </div>
+                <div>
+                    <dt>Altura mediana</dt>
+                    <dd id="rt3dMedian">-</dd>
+                </div>
+                <div>
+                    <dt>Raio analisado</dt>
+                    <dd id="rt3dRadius">-</dd>
+                </div>
+            </dl>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn btn-outline-primary btn-sm flex-grow-1" id="toggleRt3dLayer" data-disabled-during-coverage data-bs-toggle="tooltip" title="Exibe ou oculta o modelo urbano extrudado.">Ocultar malha urbana</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="refreshRt3dLayer" data-bs-toggle="tooltip" title="Recarrega a malha urbana usando os parâmetros atuais." data-disabled-during-coverage>Atualizar cena</button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="toggleRt3dRays" data-disabled-during-coverage data-bs-toggle="tooltip" title="Controla a visualização dos raios traçados.">Ocultar raios</button>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a class="btn btn-sm btn-brand flex-grow-1" id="openRt3dViewer" target="_blank" rel="noopener" data-bs-toggle="tooltip" title="Abre uma nova aba com a visualização Cesium/3D.">Abrir em 3D (Cesium)</a>
+                <a class="btn btn-sm btn-outline-primary" id="downloadRt3dGeojson" target="_blank" rel="noopener" data-bs-toggle="tooltip" title="Baixa o GeoJSON da cena urbana atual.">Exportar GeoJSON</a>
+            </div>
+            <p class="assist-text mb-0" id="rt3dStatus">Gere a cobertura com o motor RT3D para popular este painel.</p>
+        </div>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Lista os pontos RX adicionados ao mapa.">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="card-title mb-0">Recepções</h3>
+                <button class="btn btn-sm btn-outline-secondary" type="button" id="btnClearRx" data-bs-toggle="tooltip" title="Remove todos os receptores desenhados.">Limpar</button>
+            </div>
+            <p class="assist-text">Clique no mapa para adicionar pontos RX. Toque em um item para focar ou gerar perfil.</p>
+            <ul class="rx-list" id="rxList"></ul>
+        </div>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Ganho base e ajustes aplicados ao padrão da antena.">
+            <h3 class="card-title">Resumo de Ganho</h3>
+            <dl class="card-grid" id="gainSummary">
+                <div>
+                    <dt>Ganho base</dt>
+                    <dd id="gainBase">-</dd>
+                </div>
+                <div>
+                    <dt>Horizontal (min/max)</dt>
+                    <dd id="gainHorizontal">-</dd>
+                </div>
+                <div>
+                    <dt>Vertical (min/max)</dt>
+                    <dd id="gainVertical">-</dd>
+                </div>
+                <div>
+                    <dt>Escala</dt>
+                    <dd id="fieldScale">-</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Visualize os componentes principais de perda do modelo P.452.">
+            <h3 class="card-title">Perdas P.452</h3>
+            <dl class="card-grid loss-grid" id="lossSummary">
+                <div>
+                    <dt>L_b0p</dt>
+                    <dd id="loss-L_b0p">-</dd>
+                </div>
+                <div>
+                    <dt>L_bd</dt>
+                    <dd id="loss-L_bd">-</dd>
+                </div>
+                <div>
+                    <dt>L_bs</dt>
+                    <dd id="loss-L_bs">-</dd>
+                </div>
+                <div>
+                    <dt>L_ba</dt>
+                    <dd id="loss-L_ba">-</dd>
+                </div>
+                <div>
+                    <dt>L_b</dt>
+                    <dd id="loss-L_b">-</dd>
+                </div>
+                <div>
+                    <dt>L_b_corr</dt>
+                    <dd id="loss-L_b_corr">-</dd>
+                </div>
+            </dl>
+            <p class="assist-text" id="pathTypeInfo"></p>
+        </div>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Mostra os parâmetros calculados no ponto central da mancha.">
+            <h3 class="card-title">Referência Central</h3>
+            <dl class="card-grid" id="centerSummary">
+                <div>
+                    <dt>Perda combinada</dt>
+                    <dd id="centerLoss">-</dd>
+                </div>
+                <div>
+                    <dt>Ganho efetivo</dt>
+                    <dd id="centerGain">-</dd>
+                </div>
+                <div>
+                    <dt>Trajetória</dt>
+                    <dd id="centerPath">-</dd>
+                </div>
+                <div>
+                    <dt>Distância</dt>
+                    <dd id="centerDistance">-</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Acompanhe o status da geração de perfis automáticos.">
+            <h3 class="card-title">Perfil Profissional</h3>
+            <p class="assist-text">Cada RX gera automaticamente um perfil com Fresnel, curvatura e perdas. Selecione-o na lista para visualizar ou atualizar.</p>
+            <button class="btn btn-outline-primary w-100" id="btnGenerateProfile" disabled data-bs-toggle="tooltip" title="Abre o perfil armazenado do receptor destacado.">Ver perfil selecionado</button>
+            <div class="text-center mt-3" id="profileSpinner" hidden>
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Gerando perfil do enlace...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-card" data-bs-toggle="tooltip" title="Estatísticas do enlace TX→RX atualmente selecionado.">
+            <h3 class="card-title">Ligação TX ↔ RX</h3>
+            <dl class="card-grid" id="linkSummary">
+                <div>
+                    <dt>Distância</dt>
+                    <dd id="linkDistance">-</dd>
+                </div>
+                <div>
+                    <dt>Direção</dt>
+                    <dd id="linkBearing">-</dd>
+                </div>
+                <div>
+                    <dt>Campo estimado</dt>
+                    <dd id="linkField">-</dd>
+                </div>
+                <div>
+                    <dt>Terreno RX</dt>
+                    <dd id="linkElevation">-</dd>
+                </div>
+                <div>
+                    <dt>População</dt>
+                    <dd id="linkPopulation">-</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="colorbar-card" id="colorbarCard" hidden data-bs-toggle="tooltip" title="Barra de cores referente à escala atual da mancha.">
+            <span class="colorbar-label" id="colorbarLabel">Campo elétrico [dBµV/m]</span>
+            <img id="colorbarImage" alt="Colorbar cobertura" />
+        </div>
+    </aside>
+
+    <div class="map-canvas" id="coverageMapContainer" data-project="{{ project.slug if project else '' }}" data-start-lat="{{ start_coords.lat if start_coords else '' }}"      data-last-coverage-image-url="{{ last_coverage_data.image_url if last_coverage_data and last_coverage_data.image_url else '' }}"
+     data-last-coverage-bounds="{{ last_coverage_data.bounds | tojson if last_coverage_data and last_coverage_data.bounds else '' }}"
+     data-last-colorbar-image-url="{{ last_coverage_data.colorbar_image_url if last_coverage_data and last_coverage_data.colorbar_image_url else '' }}">
+        <div id="coverageMap" class="map-container"></div>
+        <div id="coverageSpinner" class="map-loading" hidden>
+            <div class="coverage-spinner-icon" aria-hidden="true"></div>
+            <span>Gerando cobertura...</span>
+        </div>
+        <div class="map-floating-card tx-card" id="txLegend" hidden></div>
+        <div class="map-floating-card" id="mapTooltip" hidden></div>
+        <button type="button" class="map-refresh-btn" id="refreshMapData" aria-label="Atualizar dados do projeto">
+            <span class="icon" aria-hidden="true">⟳</span>
+            <span class="label">Atualizar dados</span>
+        </button>
+        <div id="rxContextMenu" class="rx-context-menu" hidden>
+            <button type="button" data-action="move">Deslocar no mapa</button>
+            <button type="button" data-action="profile">Ver perfil até o TX</button>
+            <button type="button" data-action="delete" class="text-danger">Apagar</button>
+        </div>
+    </div>
+</section>
+
+<!-- Modal Perfil -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title mb-0">Perfil de enlace</h5>
+                    <small class="text-muted">Fresnel, curvatura e perdas para o receptor selecionado.</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-legend">
+                    <div class="legend-card">
+                        <p class="legend-title">Transmissor</p>
+                        <dl>
+                            <div><dt>Município</dt><dd id="profileTxMunicipality">—</dd></div>
+                            <div><dt>Altitude</dt><dd id="profileTxAltitude">—</dd></div>
+                            <div><dt>Torre (agl)</dt><dd id="profileTxTower">—</dd></div>
+                            <div><dt>Direção</dt><dd id="profileTxDirection">—</dd></div>
+                        </dl>
+                    </div>
+                    <div class="legend-card">
+                        <p class="legend-title">Receptor</p>
+                        <dl>
+                            <div><dt>Município</dt><dd id="profileRxMunicipality">—</dd></div>
+                            <div><dt>Altitude</dt><dd id="profileRxElevation">—</dd></div>
+                            <div><dt>Campo estimado</dt><dd id="profileRxField">—</dd></div>
+                            <div><dt>Azimute / Altura RX</dt><dd id="profileRxHeading">—</dd></div>
+                        </dl>
+                    </div>
+                    <div class="legend-card">
+                        <p class="legend-title">Link</p>
+                        <dl>
+                            <div><dt>Distância</dt><dd id="profileLinkDistance">—</dd></div>
+                            <div><dt>ERP (TX)</dt><dd id="profileLinkErp">—</dd></div>
+                            <div><dt>P. RX</dt><dd id="profileLinkPower">—</dd></div>
+                            <div><dt>Observações</dt><dd id="profileLinkObstacles">—</dd></div>
+                        </dl>
+                    </div>
+                </div>
+                <img id="profileImage" alt="Perfil de enlace" class="profile-image" />
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{{ url_for('static', filename='js/pages/mapa.js') }}"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&libraries=geometry&callback=initCoverageMap" async defer></script>
+{% endblock %}

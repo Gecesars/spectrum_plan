@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculos RF - Divisores Simétricos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar-custom {
+            background-color: #333;
+            padding: 0.5rem 1rem;
+        }
+        .navbar-custom .navbar-nav .nav-link {
+            color: white;
+            background-color: #007bff;
+            margin-left: 5px;
+        }
+        .navbar-custom .dropdown-menu {
+            background-color: #333;
+            border: none;
+        }
+        .navbar-custom .dropdown-item {
+            color: white;
+        }
+        .navbar-custom .dropdown-item:hover {
+            background-color: #007bff;
+        }
+        .sidebar {
+            background-color: #f8f9fa;
+            padding: 10px;
+            width: 250px;
+            position: fixed;
+            height: 100vh;
+            overflow: auto;
+        }
+        .content {
+            margin-left: 260px;
+            padding: 10px;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f4f4f4;
+        }
+        .back-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        .file-explorer {
+            display: none;
+            flex-wrap: wrap;
+        }
+        .file-explorer .folder,
+        .file-explorer .file {
+            width: 150px;
+            height: 150px;
+            margin: 10px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .file-explorer .folder {
+            background-color: #c4c0a5;
+            border: 1px solid #2c2626;
+        }
+        .file-explorer .file {
+            background-color: #918c8c;
+            border: 1px solid #dfc3c3;
+        }
+        .file-explorer .icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+        .file-explorer .thumbnail {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border: 1px solid #8b7b7b;
+        }
+        .file-explorer .thumbnail-large {
+            width: 100%;
+            height: auto;
+        }
+        .tutorial {
+            display: none;
+            padding: 20px;
+            background-color: #f4f4f4;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Microwave</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            File
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="#">Abrir...</a></li>
+                            <li><a class="dropdown-item" href="#">Salvar</a></li>
+                            <li><a class="dropdown-item" href="#">Fechar</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Help
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="#" onclick="showTutorial()">Tutorial</a></li>
+                            <li><a class="dropdown-item" href="#">Sobre</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="sidebar">
+        <button class="btn btn-primary w-100 mb-2" onclick="showDivisorForm()">Calcular Divisores Simétricos</button>
+        <button class="btn btn-primary w-100 mb-2" onclick="showFileExplorer()">Biblioteca de Projetos 3D</button>
+    </div>
+    <div class="content">
+        <h1>Biblioteca 3D</h1>
+        <div id="divisorForm" style="display: none;">
+            <form id="calcDivisorForm" onsubmit="calculateDivisor(); return false;">
+                <div class="form-group">
+                    <label for="frequencia">Frequência (MHz)</label>
+                    <input type="number" class="form-control" id="frequencia" placeholder="Digite a frequência em MHz" step="any">
+                </div>
+                <div class="form-group">
+                    <label for="diametroExterno">Diâmetro do Tubo Externo (mm)</label>
+                    <input type="number" class="form-control" id="diametroExterno" placeholder="Digite o diâmetro em mm" step="any">
+                </div>
+                <div class="form-group">
+                    <label for="espessuraParede">Espessura da Parede (mm)</label>
+                    <input type="number" class="form-control" id="espessuraParede" placeholder="Digite a espessura da parede" step="any">
+                </div>
+                <div class="form-group">
+                    <label for="numeroSaidas">Número de Saídas</label>
+                    <input type="number" class="form-control" id="numeroSaidas" placeholder="Digite o número de saídas">
+                </div>
+                <div class="form-group">
+                    <label for="meioUsado">Meio Usado no Transformador do Divisor</label>
+                    <select class="form-control" id="meioUsado" onchange="checkOther(this.value);">
+                        <option value="Ar">Ar</option>
+                        <option value="Teflon">Teflon</option>
+                        <option value="Polipropileno">Polipropileno</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+                <div class="form-group" id="epsilonRField" style="display: none;">
+                    <label for="epsilonR">Epsilon R</label>
+                    <input type="number" class="form-control" id="epsilonR" placeholder="Digite o valor de Epsilon R" step="any">
+                </div>
+                <button type="submit" class="btn btn-primary">Calcular</button>
+            </form>
+            <div id="results" class="result" style="display: none;">
+                <p id="resultComprimento"></p>
+                <p id="resultDiametro"></p>
+            </div>
+        </div>
+        <div id="fileExplorer" class="file-explorer"></div>
+        <div id="tutorial" class="tutorial">
+            <h2>Tutorial</h2>
+            <h3>Cálculo de Divisores Simétricos</h3>
+            <p>O cálculo de divisores simétricos permite ao usuário fornecer os parâmetros básicos para o cálculo de um transformador de impedâncias. Os cálculos são baseados na frequência informada para determinar o comprimento e o diâmetro interno do transformador.</p>
+            <p><strong>Parâmetros necessários:</strong></p>
+            <ul>
+                <li><strong>Frequência (MHz):</strong> A frequência de operação do sistema.</li>
+                <li><strong>Diâmetro do Tubo Externo (mm):</strong> O diâmetro externo do tubo que será usado no transformador.</li>
+                <li><strong>Espessura da Parede (mm):</strong> A espessura da parede do tubo.</li>
+                <li><strong>Número de Saídas:</strong> O número de saídas do divisor.</li>
+                <li><strong>Meio Usado no Transformador:</strong> O meio dielétrico usado dentro do transformador (por exemplo, Ar, Teflon, Polipropileno, Outro).</li>
+                <li><strong>Epsilon R:</strong> A constante dielétrica do meio, necessária se 'Outro' for selecionado.</li>
+            </ul>
+            <h3>Biblioteca de Projetos 3D</h3>
+            <p>
+                A Biblioteca de Projetos 3D permite ao usuário navegar por pastas contendo imagens de milhares de projetos. Para utilizar a biblioteca:
+            </p>
+            <ol>
+                <li>Clique no botão 'Biblioteca de Projetos 3D' no menu lateral.</li>
+                <li>Navegue pelas pastas exibidas em formato de grade para visualizar os projetos disponíveis.</li>
+                <li>Para obter mais informações sobre como fazer o download dos modelos nas imagens, entre em contato com <a href="mailto:atxcover@gmail.com">atxcover@gmail.com</a>.</li>
+            </ol>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showDivisorForm() {
+            document.getElementById('divisorForm').style.display = 'block';
+            document.getElementById('fileExplorer').style.display = 'none';
+            document.getElementById('tutorial').style.display = 'none';
+        }
+
+        function showFileExplorer() {
+            document.getElementById('divisorForm').style.display = 'none';
+            document.getElementById('fileExplorer').style.display = 'flex';
+            document.getElementById('tutorial').style.display = 'none';
+            initializeFileExplorer();
+        }
+
+        function showTutorial() {
+            document.getElementById('divisorForm').style.display = 'none';
+            document.getElementById('fileExplorer').style.display = 'none';
+            document.getElementById('tutorial').style.display = 'block';
+        }
+
+        function checkOther(value) {
+            var epsilonRField = document.getElementById('epsilonRField');
+            if (value === 'Outro') {
+                epsilonRField.style.display = 'block';
+            } else {
+                epsilonRField.style.display = 'none';
+            }
+        }
+
+        function calculateDivisor() {
+            var frequencia = parseFloat(document.getElementById('frequencia').value);
+            var diametroExterno = parseFloat(document.getElementById('diametroExterno').value);
+            var espessuraParede = parseFloat(document.getElementById('espessuraParede').value);
+            var numeroSaidas = parseInt(document.getElementById('numeroSaidas').value);
+            var meioUsado = document.getElementById('meioUsado').value;
+            var epsilonR = (meioUsado === 'Outro') ? parseFloat(document.getElementById('epsilonR').value) : getEpsilonR(meioUsado);
+
+            var velocidadeLuz = 299792458; // em metros por segundo
+            var comprimentoOnda = velocidadeLuz / (frequencia * 1e6) / Math.sqrt(epsilonR); // Considerando a constante dielétrica
+            var comprimentoTransformador = ((comprimentoOnda ) / 4) * 1000; // comprimento do transformador em mm
+            var diametroInternoDoTubo = diametroExterno - 2 * espessuraParede;
+            var zEnd = 50 / numeroSaidas;
+            var zTr = Math.sqrt(50 * zEnd);
+            var relacao = Math.pow(10, zTr / (138/Math.sqrt(epsilonR)));
+            var diametroInterno = diametroInternoDoTubo / relacao;
+
+            document.getElementById('resultComprimento').innerHTML = "Comprimento do Transformador: " + comprimentoTransformador.toFixed(2) + " mm";
+            document.getElementById('resultDiametro').innerHTML = "Diametro Interno do Transformador: " + diametroInterno.toFixed(2) + " mm";
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function getEpsilonR(material) {
+            switch (material) {
+                case 'Ar': return 1.0006;
+                case 'Teflon': return 2.1;
+                case 'Polipropileno': return 2.6;
+                default: return 1; // Default case should not be used as 'Outro' is handled separately
+            }
+        }
+
+        async function initializeFileExplorer() {
+            const baseDir = '/static/SOLID_PRT_ASM/PNGS';
+            const folders = ['dipolo', 'feeder', 'filtro', 'flange', 'hib', 'inner', 'linha', 'log', 'omni', 'omt', 'outros', 'painel', 'parabola', 'radome', 'refletor', 'slot', 'tampa', 'tef', 'ter', 'transição', 'tub'];
+
+            const fileExplorer = document.getElementById('fileExplorer');
+            fileExplorer.innerHTML = '';
+
+            for (const folder of folders) {
+                const folderDiv = document.createElement('div');
+                folderDiv.classList.add('folder');
+                folderDiv.innerHTML = `<div class="icon">📁</div>${folder}`;
+                folderDiv.addEventListener('click', () => loadFolder(folder));
+                fileExplorer.appendChild(folderDiv);
+            }
+        }
+
+        async function loadFolder(folder) {
+            const baseDir = '/static/SOLID_PRT_ASM/PNGS';
+            const response = await fetch(`/list_files/${folder}`);
+            const files = await response.json();
+
+            const fileExplorer = document.getElementById('fileExplorer');
+            fileExplorer.innerHTML = '';
+
+            files.forEach(file => {
+                const fileDiv = document.createElement('div');
+                fileDiv.classList.add('file');
+                fileDiv.innerHTML = `<img src="${baseDir}/${folder}/${file}" class="thumbnail" onclick="showImage('${baseDir}/${folder}/${file}')">`;
+                fileExplorer.appendChild(fileDiv);
+            });
+        }
+
+        function showImage(imagePath) {
+            const img = document.createElement('img');
+            img.src = imagePath;
+            img.classList.add('thumbnail-large');
+
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.appendChild(img);
+
+            modal.addEventListener('click', () => {
+                modal.remove();
+            });
+
+            document.body.appendChild(modal);
+        }
+    </script>
+    <button class="back-button" onclick="history.back()">Voltar</button>
+</body>
+</html>

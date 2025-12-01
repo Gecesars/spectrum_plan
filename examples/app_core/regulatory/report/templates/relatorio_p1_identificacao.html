@@ -1,0 +1,28 @@
+<section class="section">
+    <h1>Relatório Técnico ANATEL/MCom</h1>
+    <p class="muted">Gerado em {{ generated_at.strftime('%d/%m/%Y %H:%M') }}</p>
+    <table>
+        <tr>
+            <th>Projeto</th>
+            <td>{{ project.name }}</td>
+            <th>Relatório</th>
+            <td>{{ report.name }}</td>
+        </tr>
+        <tr>
+            <th>Serviço</th>
+            <td>{{ station.servico or 'FM' }}</td>
+            <th>Classe</th>
+            <td>{{ station.classe or '-' }}</td>
+        </tr>
+        <tr>
+            <th>Canal/Frequência</th>
+            <td>{{ station.canal or station.frequencia or '-' }}</td>
+            <th>Localização</th>
+            <td>{{ decea.latitude }}, {{ decea.longitude }}</td>
+        </tr>
+        <tr>
+            <th>Coordenadas</th>
+            <td colspan="3">{{ decea.latitude }} / {{ decea.longitude }} — {{ decea.altura_m }} m</td>
+        </tr>
+    </table>
+</section>

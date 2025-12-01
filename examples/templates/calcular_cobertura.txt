@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcular Cobertura</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .button-3d-red {
+        background-color: #ff6666; /* Vermelho claro */
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 5px;
+        box-shadow: 0 5px #cc0000; /* Sombra para efeito 3D em tom de vermelho mais escuro */
+        transition: all 0.3s ease;
+       }
+
+      .button-3d-red:active {
+       box-shadow: 0 2px #cc0000;
+       transform: translateY(4px);
+      }
+
+        body {
+            background: #f4f4f4;
+            padding-top: 20px;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group select {
+            width: 50%;
+        }
+        .btn-enter-coordinates {
+            margin-bottom: 10px;
+        }
+        .modal-dialog {
+            max-width: 70%;
+        }
+        .dms-input {
+            display: flex;
+            justify-content: space-between;
+        }
+        .dms-input input {
+            width: 30%;
+        }
+        .direction-select {
+            width: 20%;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Modal de Sucesso -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Sucesso!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Os dados foram salvos com sucesso.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Erro -->
+<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Erro!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Houve um erro ao salvar os dados. Tente novamente.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <div class="container">
+        <h1 class="mb-4 text-center">Cálculo de Cobertura</h1>
+        <h2 id="welcomeMessage" class="mb-4 text-center">Bem-vindo: <span id="userName">Nome do Usuário</span></h2>
+        <div class="text-center mb-4">
+            <button type="button" class="btn btn-secondary" onclick="carregarDadosUsuario()">Carregar Dados</button>
+        </div>
+        <form id="coberturaForm">
+
+            <h5> Cálculos de propação utilizam modelos ITU-R P.1546 para sistemas ponto área e ITU-R P.530 para sistemas ponto a ponto </h5>
+            <h5> ---------------------------------------------------------------------------------------------------------------------------------------- </h5>
+            
+
+            <div class="form-group">
+                <label for="propagationModel">Ambiente de Propagação:</label>
+                <select name="propagationModel" id="propagationModel" class="form-control" required>
+                    <option value="">Selecione...</option>
+                    <option value="modelo1">Urbano</option>
+                    <option value="modelo2">Suburbano</option>
+                    <option value="modelo3">Rural</option>
+                    <option value="modelo4">Floresta</option>
+                    <option value="modelo5">Desconhecido</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="serviceType">Tipo de Serviço:</label>
+                <select id="serviceType" name="serviceType" class="form-control" required>
+                    <option value="">Selecione um tipo de serviço</option>
+                    <option value="RadiodifusaoFM">Radiodifusão FM</option>
+                    <option value="RadiodifusaoTV">Radiodifusão TV</option>
+                    <option value="LinkPontoAPonto">Link ponto a ponto</option>
+                    <option value="Redes4G5G">Redes 4G, 5G</option>
+                    <option value="Outros">Outros</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Total_loss">Total de perdas no Sistema:</label>
+                <input type="number" id="Total_loss" name="Total_loss" class="form-control" min="0" step="any" required>
+            </div>           
+
+
+            <button type="button" class="btn btn-primary btn-enter-coordinates" data-toggle="modal" data-target="#coordinatesModal">Entrar com as Coordenadas da Torre</button>
+
+            <div class="form-group">
+                <label for="antennaGain">Ganho da Antena (dBd):</label>
+                <input type="number" id="antennaGain" name="antennaGain" class="form-control" min="0" step="any" required>
+            </div>
+
+            <div class="form-group">
+                <label for="towerHeight">Altura do centro de fase (HCI):</label>
+                <input type="number" id="towerHeight" name="towerHeight" class="form-control" min="1" step="any" required>
+            </div>
+
+            <div class="form-group">
+                <label for="transmissionPower">Potência de Transmissão em Watts:</label>
+                <input type="number" id="transmissionPower" name="transmissionPower" class="form-control" min="1" step="any" required>
+            </div>
+
+            <div class="form-group">
+                <label for="frequency">Frequência em MHz:</label>
+                <input type="number" id="frequency" name="frequency" class="form-control" min="1" step="any" required>
+            </div>
+
+
+            
+
+            <div class="btn-container">
+                <button type="button" class="btn btn-primary" id="saveButton"  onclick="submitForm()">Salvar no Banco de Dados</button>
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='/visualizar-dados-salvos'">Visualizar DataBase</button>
+                <button type="button" class="button-3d-red" onclick="window.location.href='/mapa'">Gerar Cobertura</button>
+            </div>
+        </form>
+
+        <!-- Campo somente leitura para exibir coordenadas -->
+        <div class="form-group">
+            <label for="coordinates">Coordenadas:</label>
+            <input type="text" id="coordinates" class="form-control" readonly>
+        </div>
+    </div>
+
+    <!-- Modal para Coordenadas da Torre -->
+    <div class="modal fade" id="coordinatesModal" tabindex="-1" role="dialog" aria-labelledby="coordinatesModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="coordinatesModalLabel">Coordenadas da Torre</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="latitudeDecimal">Latitude (Decimal):</label>
+                        <input type="number" id="latitudeDecimal" name="latitudeDecimal" class="form-control" min="-90" max="90" oninput="updateDMS('latitudeDecimal', 'latitudeDegrees', 'latitudeMinutes', 'latitudeSeconds', 'latitudeDirection')">
+                    </div>
+                    <div class="form-group dms-input">
+                        <input type="number" id="latitudeDegrees" name="latitudeDegrees" class="form-control" min="-90" max="90" placeholder="Graus" oninput="updateDecimal('latitudeDegrees', 'latitudeMinutes', 'latitudeSeconds', 'latitudeDirection', 'latitudeDecimal')">
+                        <input type="number" id="latitudeMinutes" name="latitudeMinutes" class="form-control" min="0" max="59" placeholder="Minutos" oninput="updateDecimal('latitudeDegrees', 'latitudeMinutes', 'latitudeSeconds', 'latitudeDirection', 'latitudeDecimal')">
+                        <input type="number" id="latitudeSeconds" name="latitudeSeconds" class="form-control" min="0" max="59" placeholder="Segundos" oninput="updateDecimal('latitudeDegrees', 'latitudeMinutes', 'latitudeSeconds', 'latitudeDirection', 'latitudeDecimal')">
+                        <select name="latitudeDirection" id="latitudeDirection" class="form-control direction-select" onchange="updateDecimal('latitudeDegrees', 'latitudeMinutes', 'latitudeSeconds', 'latitudeDirection', 'latitudeDecimal')">
+                            <option value="N">Norte</option>
+                            <option value="S">Sul</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="longitudeDecimal">Longitude (Decimal):</label>
+                        <input type="number" id="longitudeDecimal" name="longitudeDecimal" class="form-control" min="-180" max="180" oninput="updateDMS('longitudeDecimal', 'longitudeDegrees', 'longitudeMinutes', 'longitudeSeconds', 'longitudeDirection')">
+                    </div>
+                    <div class="form-group dms-input">
+                        <input type="number" id="longitudeDegrees" name="longitudeDegrees" class="form-control" min="-180" max="180" placeholder="Graus" oninput="updateDecimal('longitudeDegrees', 'longitudeMinutes', 'longitudeSeconds', 'longitudeDirection', 'longitudeDecimal')">
+                        <input type="number" id="longitudeMinutes" name="longitudeMinutes" class="form-control" min="0" max="59" placeholder="Minutos" oninput="updateDecimal('longitudeDegrees', 'longitudeMinutes', 'longitudeSeconds', 'longitudeDirection', 'longitudeDecimal')">
+                        <input type="number" id="longitudeSeconds" name="longitudeSeconds" class="form-control" min="0" max="59" placeholder="Segundos" oninput="updateDecimal('longitudeDegrees', 'longitudeMinutes', 'longitudeSeconds', 'longitudeDirection', 'longitudeDecimal')">
+                        <select name="longitudeDirection" id="longitudeDirection" class="form-control direction-select" onchange="updateDecimal('longitudeDegrees', 'longitudeMinutes', 'longitudeSeconds', 'longitudeDirection', 'longitudeDecimal')">
+                            <option value="W">Oeste</option>
+                            <option value="E">Leste</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="saveCoordinates()">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+
+    function carregarDadosUsuario() {
+        fetch('/carregar-dados')
+            .then(response => response.json())
+            .then(data => {
+                // Supondo que seus campos de formulário tenham IDs correspondentes às chaves do objeto 'data'
+                console.log(data)
+                for (let key in data) {
+                    let input = document.getElementById(key);
+                    if (input) {
+                        input.value = data[key];
+                    }
+                }
+
+                const formattedCoordinates = `Latitude: ${data.latitude}, Longitude: ${data.longitude}`;
+                document.getElementById("coordinates").value = formattedCoordinates;
+            })
+            .catch(error => console.error('Erro ao carregar os dados:', error));
+       }
+
+        
+        function updateDMS(decimalFieldId, degreesFieldId, minutesFieldId, secondsFieldId, directionFieldId) {
+            const decimalValue = parseFloat(document.getElementById(decimalFieldId).value);
+            const sign = Math.sign(decimalValue);
+            const absoluteValue = Math.abs(decimalValue);
+
+            let degrees = Math.floor(absoluteValue);
+            const fractionalPart = absoluteValue - degrees;
+            let minutes = Math.floor(fractionalPart * 60);
+            const seconds = Math.round((fractionalPart * 3600) % 60);
+
+            if (minutes === 60) {
+                degrees++;
+                minutes = 0;
+            }
+
+            document.getElementById(degreesFieldId).value = degrees * sign;
+            document.getElementById(minutesFieldId).value = minutes;
+            document.getElementById(secondsFieldId).value = seconds;
+
+            const direction = sign === 1 ? 'N' : 'S';
+            document.getElementById(directionFieldId).value = direction;
+        }
+
+        function updateDecimal(degreesFieldId, minutesFieldId, secondsFieldId, directionFieldId, decimalFieldId) {
+            const degrees = parseFloat(document.getElementById(degreesFieldId).value) || 0;
+            const minutes = parseFloat(document.getElementById(minutesFieldId).value) || 0;
+            const seconds = parseFloat(document.getElementById(secondsFieldId).value) || 0;
+            const direction = document.getElementById(directionFieldId).value === 'N' || document.getElementById(directionFieldId).value === 'E' ? 1 : -1;
+            const decimalValue = degrees + (minutes / 60) + (seconds / 3600);
+            document.getElementById(decimalFieldId).value = (decimalValue * direction).toFixed(6);
+        }
+
+        function saveCoordinates() {
+            const latitudeDecimal = document.getElementById("latitudeDecimal").value;
+            const latitudeDirection = document.getElementById("latitudeDirection").value;
+            const longitudeDecimal = document.getElementById("longitudeDecimal").value;
+            const longitudeDirection = document.getElementById("longitudeDirection").value;
+
+            if (latitudeDecimal && latitudeDirection && longitudeDecimal && longitudeDirection) {
+                const latitude = latitudeDecimal + ' ' + latitudeDirection;
+                const longitude = longitudeDecimal + ' ' + longitudeDirection;
+
+                document.getElementById("coordinates").value = `Latitude: ${latitude}, Longitude: ${longitude}`;
+
+                $('#coordinatesModal').modal('hide');
+                document.getElementById("saveButton").disabled = false;
+            } else {
+                alert('Por favor, preencha todas as coordenadas.');
+            }
+        }
+
+    function submitForm() {
+const formData = new FormData(document.getElementById("coberturaForm"));
+
+const coordinates = document.getElementById("coordinates").value;
+const [latitudeWithDir, longitudeWithDir] = coordinates.replace('Latitude: ', '').replace('Longitude: ', '').split(', ');
+const [latitude, latitudeDirection] = latitudeWithDir.split(' ');
+const [longitude, longitudeDirection] = longitudeWithDir.split(' ');
+
+// Calcula a latitude e a longitude como float e então as formata como strings com sinais
+const latitudeFloat = parseFloat(latitude) * (latitudeDirection === 'N' ? 1 : -1);
+const longitudeFloat = parseFloat(longitude) * (longitudeDirection === 'E' ? 1 : -1);
+
+// Formata os valores para garantir que o sinal positivo seja explicitamente incluído
+//const latitudeSigned = `${latitudeFloat >= 0 ? '+' : ''}${latitudeFloat}`;
+//const longitudeSigned = `${longitudeFloat >= 0 ? '+' : ''}${longitudeFloat}`;
+
+const data = {
+    propagationModel: formData.get("propagationModel"),
+    Total_loss: parseFloat(formData.get("Total_loss")),
+    antennaGain: parseFloat(formData.get("antennaGain")),
+    towerHeight: parseFloat(formData.get("towerHeight")),
+    transmissionPower: parseFloat(formData.get("transmissionPower")),
+    frequency: parseFloat(formData.get("frequency")),
+    service: formData.get("serviceType"),
+   // latitude: latitudeFloat, // Usa a latitude formatada com sinal
+    //longitude: longitudeFloat, // Usa a longitude formatada com sinal
+    latitude: latitude, // Usado diretamente
+    longitude: longitude, // Usado diretamente
+};
+
+    axios.post('/salvar-dados', data)
+        .then(response => {
+            console.log(response.data);
+            $('#successModal').modal('show'); // Exibe o modal de sucesso
+        })
+        .catch(error => {
+            console.error('Erro ao salvar os dados:', error);
+            $('#errorModal').modal('show'); // Exibe o modal de erro
+        });
+}
+
+    </script>
+</body>
+</html>
